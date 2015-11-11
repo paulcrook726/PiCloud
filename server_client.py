@@ -37,7 +37,6 @@ def send_file(sock, b_data):
     sock.sendall(b_data)
 
 
-
 def evaluate(ip, port, sock):
     data = recv_all(sock)
     logging.info('[+]  Received data from: %s:%i', ip, port)
