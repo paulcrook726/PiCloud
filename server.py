@@ -125,7 +125,7 @@ class ServerSocket(socket.socket):
         while True:
             (new_socket, (ip, port)) = self.accept()
             logging.info('Incoming connection from: %s:%i', ip, port)
-            new_thread = threading.Thread(target=evaluate, args=new_socket)
+            new_thread = threading.Thread(target=evaluate, args=(new_socket,))
             new_thread.start()
 
 
