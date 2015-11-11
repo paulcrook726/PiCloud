@@ -87,7 +87,7 @@ def pre_proc(filename, is_server=0):
         return data
     elif is_server == 1:
         logging.info('%s.%s does not exist.  Notifying client.', name, file_ext)
-        return b'FileError: Does not exist.'
+        return b'FileError'
         # The file doesn't exist on the local filesystem.
         # The function will now return encoded data usable for requesting the file from a server
 
@@ -118,10 +118,10 @@ class ServerSocket(socket.socket):
 
 def main():
     logging.basicConfig(format='%(asctime)s %(message)s', filename='picloud.log', level=logging.INFO)
-    c = ClientSocket('94.216.164.16', 46000)
+    c = ClientSocket('192.168.2.194', 46000)
     f = pre_proc('random.txt')
     send_file(c, f)
-    print(recv_all(c))
+    print(str(recv_all(c), encoding='utf-8'))
 
 
 if __name__ == '__main__':
