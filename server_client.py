@@ -2,7 +2,7 @@ import socket
 import struct
 import threading
 import os
-import sys
+import logging
 
 
 def recv_all(client_sock):
@@ -37,28 +37,31 @@ def send_file(sock, b_data):
     sock.sendall(b_data)
 
 
+
 def evaluate(ip, port, sock):
     data = recv_all(sock)
-    print('[+]  Received data from: ' + ip + ':', port)
+    logging.info('[+]  Received data from: %s:%i', ip, port)
     data = data.split(b'::::::::::')
     try:
         test = data[-4]
-        print("Delimiter has been found in multiple areas.  This causes incomplete file writes."
-              "Exiting now!")
-        sys.exit()
+        logging.info("Delimiter has been found in multiple areas.  This causes incomplete file writes.  "
+                     "Exiting now!")
+        sock.close()
     except:
         pass
     file_ext = str(data[-1], encoding='utf-8')
     name = str(data[-2], encoding='utf-8')
+    logging.info('%s.%s received.', name, file_ext)
     if len(data) > 2:
         file = data[-3]
         with open(name+'.'+file_ext, 'wb') as filename:
             filename.write(file)
     else:
-        send_file(sock, pre_proc((name+'.'+file_ext)))
+        logging.info('File Request')
+        send_file(sock, pre_proc((name+'.'+file_ext), is_server=1))
 
 
-def pre_proc(filename):
+def pre_proc(filename, is_server=0):
     """The pre_proc function opens a file name with the name "filename" (directory and file extension included!), and
     then encodes the data into byte string, while encoding key info into the communication protocol.  If the filename
     does not exist on the local drive, and the function is being used as a client (is_server = 0),
@@ -80,9 +83,12 @@ def pre_proc(filename):
         #  This structures the byte string into data<>name<>file extension.  This will later be
         #  decoded in order to store the data under the name and file extension.
         return data
-    else:
+    elif is_server == 0:
         data = name + delimiter + file_ext
         return data
+    elif is_server == 1:
+        logging.info('%s.%s does not exist.  Notifying client.', name, file_ext)
+        return b'FileError: Does not exist.'
         # The file doesn't exist on the local filesystem.
         # The function will now return encoded data usable for requesting the file from a server
 
@@ -106,9 +112,17 @@ class ServerSocket(socket.socket):
     def activate(self):
         while True:
             (new_socket, (ip, port)) = self.accept()
+            logging.info('Incoming connection from: %s:%i', ip, port)
             new_thread = threading.Thread(target=evaluate, args=(ip, port, new_socket))
             new_thread.start()
 
-c = ClientSocket('94.216.164.16', 46000)
-f = pre_proc('attitude.pdf')
-send_file(c, f)
+def main():
+    logging.basicConfig(format='%(asctime)s %(message)s', filename='picloud.log', level=logging.INFO)
+    c = ClientSocket('94.216.164.16', 46000)
+    f = pre_proc('random.txt')
+    send_file(c, f)
+    print(recv_all(c))
+
+
+if __name__ == '__main__':
+    main()
