@@ -115,6 +115,7 @@ class ServerSocket(socket.socket):
             new_thread = threading.Thread(target=evaluate, args=(ip, port, new_socket))
             new_thread.start()
 
+
 def main():
     logging.basicConfig(format='%(asctime)s %(message)s', filename='picloud.log', level=logging.INFO)
     c = ClientSocket('94.216.164.16', 46000)
