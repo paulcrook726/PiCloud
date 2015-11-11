@@ -45,7 +45,7 @@ def evaluate(sock):
     data = recv_all(sock)
     if data == b'FileError':
         logging.info('Request could not be found')
-        sock.close()
+        return sock.close()
     logging.info('[+]  Received data from: %s:%i', ip, port)
     data = data.split(b'::::::::::')
     try:
