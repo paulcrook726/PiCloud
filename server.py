@@ -38,10 +38,14 @@ def send_file(sock, b_data):
     sock.sendall(b_data)
 
 
-def evaluate(ip, port, sock):
+def evaluate(sock):
     """This function takes a socket produced by the accept() method of the main server.  It then receives the incoming
     data and evaluates it based on its features."""
+    (ip, port) = sock.getpeername()
     data = recv_all(sock)
+    if data == b'FileError':
+        logging.info('Request could not be found')
+        sock.close()
     logging.info('[+]  Received data from: %s:%i', ip, port)
     data = data.split(b'::::::::::')
     try:
@@ -121,7 +125,7 @@ class ServerSocket(socket.socket):
         while True:
             (new_socket, (ip, port)) = self.accept()
             logging.info('Incoming connection from: %s:%i', ip, port)
-            new_thread = threading.Thread(target=evaluate, args=(ip, port, new_socket))
+            new_thread = threading.Thread(target=evaluate, args=new_socket)
             new_thread.start()
 
 
