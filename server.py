@@ -32,39 +32,44 @@ def proc_block(client_sock, length):
 
 def send_file(sock, b_data):
     """This function structures a single file (in byte string) into the form: [length of byte string + byte string].
-    Then it sends the structured data to the connected socket."""
+    Then it sends the structured data to the connected socket.  The b_data variable must be in byte string.  The sock
+    variable is a socket object which sends the data."""
     b_data = struct.pack('>I', len(b_data)) + b_data
     sock.sendall(b_data)
 
 
 def evaluate(ip, port, sock):
+    """This function takes a socket produced by the accept() method of the main server.  It then receives the incoming
+    data and evaluates it based on its features."""
     data = recv_all(sock)
     logging.info('[+]  Received data from: %s:%i', ip, port)
     data = data.split(b'::::::::::')
     try:
-        test = data[-4]
-        logging.info("Delimiter has been found in multiple areas.  This causes incomplete file writes.  "
-                     "Exiting now!")
+        x = data[-4]
+        logging.info("Delimiter has been found in multiple areas, causing %i bytes to be left out.  "
+                     "This causes incomplete file writes.  Exiting now!", len(x))
+
         sock.close()
-    except:
+    except IndexError:
         pass
     file_ext = str(data[-1], encoding='utf-8')
     name = str(data[-2], encoding='utf-8')
     logging.info('%s.%s received.', name, file_ext)
     if len(data) > 2:
         file = data[-3]
-        with open(name+'.'+file_ext, 'wb') as filename:
-            filename.write(file)
+        with open(name+'.'+file_ext, 'wb') as f:
+            f.write(file)
     else:
         logging.info('File Request')
         send_file(sock, pre_proc((name+'.'+file_ext), is_server=1))
 
 
 def pre_proc(filename, is_server=0):
-    """The pre_proc function opens a file name with the name "filename" (directory and file extension included!), and
+    """The pre_proc function opens a file name with the name filename (directory and file extension included!), and
     then encodes the data into byte string, while encoding key info into the communication protocol.  If the filename
     does not exist on the local drive, and the function is being used as a client (is_server = 0),
-    it will return an encoded request for that file."""
+    it will return an encoded request for that file.  If the file cannot be found, and the function is being used as a
+    server, a FileError is returned."""
 
     file_ext = bytes(filename.split('.')[1], encoding='utf-8')
     name = bytes(filename.split('.')[0], encoding='utf-8')
@@ -86,13 +91,15 @@ def pre_proc(filename, is_server=0):
         data = name + delimiter + file_ext
         return data
     elif is_server == 1:
-        logging.info('%s.%s does not exist.  Notifying client.', name, file_ext)
+        logging.info('%s.%s does not exist.  Notifying client.', str(name, encoding='utf-8'),
+                     str(file_ext, encoding='utf-8'))
         return b'FileError'
         # The file doesn't exist on the local filesystem.
         # The function will now return encoded data usable for requesting the file from a server
 
 
 class ClientSocket(socket.socket):
+    """This is a wrapper subclass of the socket.socket class.  Used primarily for simplicity."""
     def __init__(self, host, port):
         socket.socket.__init__(self)
         self.host = host
@@ -101,6 +108,7 @@ class ClientSocket(socket.socket):
 
 
 class ServerSocket(socket.socket):
+    """This is a wrapper subclass of the socket.socket class.  Creates a socket with a few predefined variables."""
     def __init__(self, port):
         socket.socket.__init__(self)
         self.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -109,6 +117,7 @@ class ServerSocket(socket.socket):
         self.listen(5)
 
     def activate(self):
+        """This activates the main server event loop for accepting incoming connections."""
         while True:
             (new_socket, (ip, port)) = self.accept()
             logging.info('Incoming connection from: %s:%i', ip, port)
