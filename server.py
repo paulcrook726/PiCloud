@@ -50,6 +50,7 @@ def send_file(sock, b_data):
     variable is a socket object which sends the data."""
     b_data = struct.pack('>I', len(b_data)) + b_data
     sock.sendall(b_data)
+    logging.info('Successfully sent data')
 
 
 def evaluate(sock):
