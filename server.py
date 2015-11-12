@@ -5,17 +5,38 @@ import os
 import logging
 
 
+class SentFile:
+    def __init__(self, name, ext):
+        self.name = name
+        self.ext = ext
+        self.data = b''
+
+    def take_data(self, data):
+        self.data += data
+
+    def evaluate(self):
+        if self.ext == 'id':
+            # create user with self.name as name
+        else:
+            with open(self.name+'.'+self.ext, 'wb') as f:
+                f.write(self.data)
+
+
 def recv_all(client_sock):
     raw_len = proc_block(client_sock, 4)
     if raw_len is None:
         return None
     packet_len = struct.unpack('>I', raw_len)[0]
     if packet_len > (2048**2):  # If the file is greater than 1mb, it is divided up into 1mb blocks,
-        block = b''             # then block by block received and added to the block variable, then returned
-        while len(block) < packet_len:
-            block = proc_block(client_sock, (2048**2)) + block
-            print((len(block)/packet_len)*100, '% completed')
-        return block
+        total_msg = b''             # then block by block received and added to the block variable, then returned
+        b_received = 0
+        while b_received < packet_len:
+            total_msg += proc_block(client_sock, (2048**2))
+            if total_msg is None:
+                break
+            b_received += (2048**2)
+            print((len(total_msg)/packet_len)*100, '% completed')
+        return total_msg
     else:
         return proc_block(client_sock, packet_len)
 
@@ -60,9 +81,10 @@ def evaluate(sock):
     name = str(data[-2], encoding='utf-8')
     logging.info('%s.%s received.', name, file_ext)
     if len(data) > 2:
-        file = data[-3]
-        with open(name+'.'+file_ext, 'wb') as f:
-            f.write(file)
+        data = data[-3]
+        file = SentFile(name, file_ext)
+        file.take_data(data)
+        file.evaluate()
     else:
         logging.info('File Request')
         send_file(sock, pre_proc((name+'.'+file_ext), is_server=1))
