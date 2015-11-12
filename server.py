@@ -59,8 +59,9 @@ def send_file(sock, b_data):
         to_send = b_data[:buffer_size-1]
         just_sent = sock.send(to_send)
         sent += just_sent
+        logging.info('[+]  Upload %i% complete', ((sent/length)*100))
         b_data = b_data[buffer_size-1:]
-    logging.info('Successfully sent data')
+    logging.info('[+]  Successfully sent data')
 
 
 def evaluate(sock):
@@ -69,10 +70,10 @@ def evaluate(sock):
     (ip, port) = sock.getpeername()
     data = recv_all(sock)
     if data == b'FileError':
-        logging.info('Request could not be found')
+        logging.info('[-]  Request could not be found')
         return sock.close()
     if data == b'FileReceived':
-        logging.info('Sent file was successfully received')
+        logging.info('[+]  Sent file was successfully received')
         return sock.close()
     if data is None:
         return sock.close()
@@ -80,7 +81,7 @@ def evaluate(sock):
     logging.info('[+]  Received data from: %s:%i', ip, port)
     try:
         x = data[-4]
-        logging.info("Delimiter has been found in multiple areas, causing %i bytes to be left out.  "
+        logging.info("[-]  Delimiter has been found in multiple areas, causing %i bytes to be left out.  "
                      "This causes incomplete file writes.  Exiting now!", len(x))
 
         return sock.close()
@@ -88,7 +89,7 @@ def evaluate(sock):
         pass
     file_ext = str(data[-1], encoding='utf-8')
     name = str(data[-2], encoding='utf-8')
-    logging.info('%s.%s received.', name, file_ext)
+    logging.info('[+]  The file %s.%s was received.', name, file_ext)
     if len(data) > 2:
         send_file(sock, b'FileReceived')
         sock.close()
@@ -97,7 +98,7 @@ def evaluate(sock):
         file.take_data(data)
         file.evaluate()
     else:
-        logging.info('File Request')
+        logging.info('[-]  File Request')
         send_file(sock, pre_proc((name+'.'+file_ext), is_server=1))
 
 
@@ -128,7 +129,7 @@ def pre_proc(filename, is_server=0):
         data = name + delimiter + file_ext
         return data
     elif is_server == 1:
-        logging.info('%s.%s does not exist.  Notifying client.', str(name, encoding='utf-8'),
+        logging.info('[-]  %s.%s does not exist.  Notifying client.', str(name, encoding='utf-8'),
                      str(file_ext, encoding='utf-8'))
         return b'FileError'
         # The file doesn't exist on the local filesystem.
@@ -157,7 +158,7 @@ class ServerSocket(socket.socket):
         """This activates the main server event loop for accepting incoming connections."""
         while True:
             (new_socket, (ip, port)) = self.accept()
-            logging.info('Incoming connection from: %s:%i', ip, port)
+            logging.info('[+]  Incoming connection from: %s:%i', ip, port)
             new_thread = threading.Thread(target=evaluate, args=(new_socket,))
             new_thread.start()
 
