@@ -43,18 +43,11 @@ def recv_all(client_sock):
 
 def proc_block(client_sock, length):
     block = b''
-    if length > (2048**2):
-        while len(block) < length:
-            packet = client_sock.recv(2048**2)
-            if not packet:
-                return None
-            block += packet
-    else:
-        while len(block) < length:
-            packet = client_sock.recv(length)
-            if not packet:
-                return None
-            block += packet
+    while len(block) < length:
+        packet = client_sock.recv(length)
+        if not packet:
+            return None
+        block += packet
     return block
 
 
