@@ -54,11 +54,12 @@ def send_file(sock, b_data):
     length = len(b_data)
     b_data = struct.pack('>I', length) + b_data
     sent = 0
+    buffer_size = 1024**2
     while sent < length:
-        to_send = b_data[:4095]
-        sock.send(to_send)
-        sent += 4096
-        b_data = b_data[4095:]
+        to_send = b_data[:buffer_size-1]
+        just_sent = sock.send(to_send)
+        sent += just_sent
+        b_data = b_data[buffer_size-1:]
     logging.info('Successfully sent data')
 
 
