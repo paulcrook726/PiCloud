@@ -53,7 +53,12 @@ def send_file(sock, b_data):
     variable is a socket object which sends the data."""
     length = len(b_data)
     b_data = struct.pack('>I', length) + b_data
-    sock.sendall(b_data)
+    sent = 0
+    while sent < length:
+        to_send = b_data[:4095]
+        sock.send(to_send)
+        sent += 4096
+        b_data = b_data[4095:]
     logging.info('Successfully sent data')
 
 
