@@ -41,14 +41,18 @@ def recv_all(client_sock):
         return proc_block(client_sock, packet_len)
 
 
-def proc_block(client_sock, length):
-    block = b''
-    while len(block) < length:
-        packet = client_sock.recv(length)
+def proc_block(client_sock, length, block=b''):
+    if length > 2048**2:
+        packet = client_sock.recv(2048**2)
         if not packet:
             return None
+        length -= 2048**2
         block += packet
-    return block
+        proc_block(client_sock, length, block=block)
+    else:
+        end_packet = client_sock.recv(length)
+        block += end_packet
+        return block
 
 
 def send_file(sock, b_data):
