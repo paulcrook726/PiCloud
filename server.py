@@ -15,11 +15,11 @@ class SentFile:
         self.data += data
 
     def evaluate(self):
-        """if self.ext == 'id':
-            # create user with self.name as name
+        if self.ext == 'id':
+            something = ''
         else:
             with open(self.name+'.'+self.ext, 'wb') as f:
-                f.write(self.data)"""
+                f.write(self.data)
 
 
 def recv_all(client_sock):
