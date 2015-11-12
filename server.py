@@ -27,18 +27,7 @@ def recv_all(client_sock):
     if raw_len is None:
         return None
     packet_len = struct.unpack('>I', raw_len)[0]
-    if packet_len > (2048**2):  # If the file is greater than 1mb, it is divided up into 1mb blocks,
-        total_msg = b''             # then block by block received and added to the block variable, then returned
-        b_received = 0
-        while b_received < packet_len:
-            total_msg += proc_block(client_sock, (2048**2))
-            if total_msg is None:
-                break
-            b_received += (2048**2)
-            print((len(total_msg)/packet_len)*100, '% completed')
-        return total_msg
-    else:
-        return proc_block(client_sock, packet_len)
+    return proc_block(client_sock, packet_len)
 
 
 def proc_block(client_sock, length, block=b''):
