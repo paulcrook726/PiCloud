@@ -64,8 +64,10 @@ def evaluate(sock):
     if data == b'FileReceived':
         logging.info('Sent file was successfully received')
         return sock.close()
-    logging.info('[+]  Received data from: %s:%i', ip, port)
+    if data is None:
+        return sock.close()
     data = data.split(b'::::::::::')
+    logging.info('[+]  Received data from: %s:%i', ip, port)
     try:
         x = data[-4]
         logging.info("Delimiter has been found in multiple areas, causing %i bytes to be left out.  "
