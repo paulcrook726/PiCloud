@@ -43,11 +43,18 @@ def recv_all(client_sock):
 
 def proc_block(client_sock, length):
     block = b''
-    while len(block) < length:
-        packet = client_sock.recv(length)
-        if not packet:
-            return None
-        block += packet
+    if length > (2048**2):
+        while len(block) < length:
+            packet = client_sock.recv(2048**2)
+            if not packet:
+                return None
+            block += packet
+    else:
+        while len(block) < length:
+            packet = client_sock.recv(length)
+            if not packet:
+                return None
+            block += packet
     return block
 
 
@@ -77,7 +84,7 @@ def evaluate(sock):
         logging.info("Delimiter has been found in multiple areas, causing %i bytes to be left out.  "
                      "This causes incomplete file writes.  Exiting now!", len(x))
 
-        sock.close()
+        return sock.close()
     except IndexError:
         pass
     file_ext = str(data[-1], encoding='utf-8')
