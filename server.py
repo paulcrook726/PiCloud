@@ -84,7 +84,7 @@ def evaluate(sock):
     name = str(data[-2], encoding='utf-8')
     logging.info('%s.%s received.', name, file_ext)
     if len(data) > 2:
-        sock.sendall(b'FileReceived')
+        send_file(sock, b'FileReceived')
         sock.close()
         data = data[-3]
         file = SentFile(name, file_ext)
