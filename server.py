@@ -67,6 +67,9 @@ def evaluate(sock):
     if data == b'FileError':
         logging.info('Request could not be found')
         return sock.close()
+    if data == b'FileReceived':
+        logging.info('Sent file was successfully received')
+        return sock.close()
     logging.info('[+]  Received data from: %s:%i', ip, port)
     data = data.split(b'::::::::::')
     try:
@@ -81,6 +84,8 @@ def evaluate(sock):
     name = str(data[-2], encoding='utf-8')
     logging.info('%s.%s received.', name, file_ext)
     if len(data) > 2:
+        sock.sendall(b'FileReceived')
+        sock.close()
         data = data[-3]
         file = SentFile(name, file_ext)
         file.take_data(data)
