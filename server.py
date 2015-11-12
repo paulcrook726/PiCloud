@@ -48,7 +48,8 @@ def send_file(sock, b_data):
     """This function structures a single file (in byte string) into the form: [length of byte string + byte string].
     Then it sends the structured data to the connected socket.  The b_data variable must be in byte string.  The sock
     variable is a socket object which sends the data."""
-    b_data = struct.pack('>I', len(b_data)) + b_data
+    length = len(b_data)
+    b_data = struct.pack('>I', length) + b_data
     sock.sendall(b_data)
     logging.info('Successfully sent data')
 
