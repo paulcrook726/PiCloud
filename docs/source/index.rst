@@ -11,6 +11,9 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+.. automodule:: SomeModuleName
+..autoclass:: SomeClassName
+   :members:
 
 
 Indices and tables
