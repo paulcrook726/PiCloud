@@ -7,10 +7,7 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/gh-pages/doctrees/index.doctree" afterPath="$PROJECT_DIR$/gh-pages/doctrees/index.doctree" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/gh-pages/doctrees/server.doctree" afterPath="$PROJECT_DIR$/gh-pages/doctrees/server.doctree" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/gh-pages/html/objects.inv" afterPath="$PROJECT_DIR$/gh-pages/html/objects.inv" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/vcs.xml" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/gh-pages/html/searchindex.js" afterPath="$PROJECT_DIR$/gh-pages/html/searchindex.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/client.py" afterPath="$PROJECT_DIR$/src/client.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/server.py" afterPath="$PROJECT_DIR$/src/server.py" />
     </list>
     <ignored path="PiCloud.iws" />
     <ignored path=".idea/workspace.xml" />
