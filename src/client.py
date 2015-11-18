@@ -1,4 +1,4 @@
-from server import *
+from pycloud import *
 
 def main():
     logging.basicConfig(format='%(asctime)s %(message)s', filename='picloud.log', level=logging.INFO)
