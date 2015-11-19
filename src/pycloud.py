@@ -1,3 +1,7 @@
+"""
+This module is the primary building block of the PyCloud infrastructure.  Within it, the basic file transfer protocol is
+laid down.  
+"""
 import socket
 import struct
 import threading

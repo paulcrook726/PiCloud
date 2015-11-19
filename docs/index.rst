@@ -6,7 +6,7 @@
 Welcome to PiCloud's documentation!
 ===================================
 
-Contents:
+Table of Contents:
 
 .. toctree::
    :maxdepth: 4
@@ -14,8 +14,8 @@ Contents:
    intro
    pycloud
 
-Index
-=====
+Index & Search
+==============
 
 * :ref:`genindex`
 * :ref:`modindex`
