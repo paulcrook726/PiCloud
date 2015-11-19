@@ -11,10 +11,11 @@ Contents:
 .. toctree::
    :maxdepth: 4
    
+   intro
    pycloud
 
-Indices and tables
-==================
+Index
+=====
 
 * :ref:`genindex`
 * :ref:`modindex`
