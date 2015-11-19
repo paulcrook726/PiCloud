@@ -11,8 +11,8 @@ Contents:
 .. toctree::
    :maxdepth: 4
 
-   pycloud
-
+.. automodule:: pycloud
+    :members:
 
 Indices and tables
 ==================
