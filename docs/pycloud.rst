@@ -1,7 +1,7 @@
-server module
-=============
+pycloud module
+==============
 
-.. automodule:: server
+.. automodule:: pycloud
     :members:
     :undoc-members:
     :show-inheritance:
