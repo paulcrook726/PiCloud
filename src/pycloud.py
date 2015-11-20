@@ -1,6 +1,6 @@
 """
 This module is the primary building block of the PyCloud infrastructure.  Within it, the basic file transfer protocol is
-laid down.  
+laid down.
 """
 import socket
 import struct
@@ -27,6 +27,14 @@ class SentFile:
 
 
 def recv_all(client_sock):
+    """
+    A helper function for ``proc_block()``.  Computes message length and splits into 2mb blocks,
+    then calls ``proc_block``.
+    :param client_sock: The socket which is receiving data.
+    :type client_sock: socket.socket
+    :returns: None if ``raw_len`` is None.
+
+    """
     raw_len = proc_block(client_sock, 4)
     if raw_len is None:
         return None
@@ -52,9 +60,15 @@ def proc_block(client_sock, length):
 
 
 def send_file(sock, b_data):
-    """This function structures a single file (in byte string) into the form: [length of byte string + byte string].
-    Then it sends the structured data to the connected socket.  The b_data variable must be in byte string.  The sock
-    variable is a socket object which sends the data."""
+    """
+    The ``send_file`` function appends the length of a file to the end of the data, and sends it on a socket.
+
+    Args:
+        :param sock: The socket which sends the file.
+        :type sock: socket.socket
+        :param b_data: The byte string data to be sent.
+        :type b_data: byte str
+    """
     length = len(b_data)
     b_data = struct.pack('>I', length) + b_data
     sent = 0
@@ -69,8 +83,20 @@ def send_file(sock, b_data):
 
 
 def evaluate(sock):
-    """This function takes a socket produced by the accept() method of the main server.  It then receives the incoming
-    data and evaluates it based on its features."""
+    """
+    This function takes a socket and receives the incoming and evaluates it based on its features.
+
+    If a normal file is received, the socket sends of a confirmation message, and then inputs the file into a SentFile
+    object instance.  If the received data is just a name, it assumes a request is being made, queries the name
+    for processing, and, if the filename exists on the local filesystem, sends the corresponding file back to the peer
+    socket.
+
+        Args:
+            :param sock: The socket which receives the data.
+            :type sock: socket.socket
+            :returns: ``sock.close()`` or only ends.
+
+    """
     (ip, port) = sock.getpeername()
     data = recv_all(sock)
     if data == b'FileError':
@@ -107,11 +133,20 @@ def evaluate(sock):
 
 
 def pre_proc(filename, is_server=0):
-    """The pre_proc function opens a file name with the name filename (directory and file extension included!), and
-    then encodes the data into byte string, while encoding key info into the communication protocol.  If the filename
-    does not exist on the local drive, and the function is being used as a client (is_server = 0),
-    it will return an encoded request for that file.  If the file cannot be found, and the function is being used as a
-    server, a FileError is returned."""
+    """The ''pre_proc'' function processes a filename, and returning the answer.
+
+    If the filename exists in the local filesystem, then the corresponding file is read into byte string, processed, and
+    returned.
+
+        Args:
+            :param filename: Name of the file to be pre-processed.
+            :type filename: str
+            :param is_server: This flags the function as being used on a server.
+            :type is_server: int
+            :returns: Either file data, file name, or ``FileError``.
+            :rtype: byte str
+
+    """
 
     file_ext = bytes(filename.split('.')[1], encoding='utf-8')
     name = bytes(filename.split('.')[0], encoding='utf-8')
@@ -141,8 +176,20 @@ def pre_proc(filename, is_server=0):
 
 
 class ClientSocket(socket.socket):
-    """This is a wrapper subclass of the socket.socket class.  Used primarily for simplicity."""
+    """
+    This is a subclass of ``socket.socket``.  Introduced primarily for simplicity and the setting of pre-defined
+    values.
+    """
     def __init__(self, host, port):
+        """
+        Defines connecting address and connects to it.
+
+        :param host: Host IP or hostname of desired peer socket.
+        :type host: str
+        :param port: Port number of server service.
+        :type port: int
+        :returns:
+        """
         socket.socket.__init__(self)
         self.host = host
         self.port = port
@@ -150,8 +197,14 @@ class ClientSocket(socket.socket):
 
 
 class ServerSocket(socket.socket):
-    """This is a wrapper subclass of the socket.socket class.  Creates a socket with a few predefined variables."""
+    """This is a subclass of ``socket.socket``.  Creates a socket with a few pre-defined variables."""
     def __init__(self, port):
+        """
+        Sets address as reusable.  Binds and listens on the address.
+        :param port: Port number to listen on.
+        :type port: int
+        :return:
+        """
         socket.socket.__init__(self)
         self.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.port = port
@@ -159,7 +212,9 @@ class ServerSocket(socket.socket):
         self.listen(5)
 
     def activate(self):
-        """This activates the main server event loop for accepting incoming connections."""
+        """
+        This activates the main server event loop for accepting incoming connections.
+        """
         while True:
             (new_socket, (ip, port)) = self.accept()
             logging.info('[+]  Incoming connection from: %s:%i', ip, port)
