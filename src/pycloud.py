@@ -68,6 +68,7 @@ def send_file(sock, b_data):
         :type sock: socket.socket
         :param b_data: The byte string data to be sent.
         :type b_data: byte str
+
     """
     length = len(b_data)
     b_data = struct.pack('>I', length) + b_data
@@ -189,6 +190,7 @@ class ClientSocket(socket.socket):
         :param port: Port number of server service.
         :type port: int
         :returns:
+
         """
         socket.socket.__init__(self)
         self.host = host
@@ -203,7 +205,8 @@ class ServerSocket(socket.socket):
         Sets address as reusable.  Binds and listens on the address.
         :param port: Port number to listen on.
         :type port: int
-        :return:
+        :returns:
+        
         """
         socket.socket.__init__(self)
         self.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
