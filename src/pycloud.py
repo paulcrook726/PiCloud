@@ -7,10 +7,12 @@ import struct
 import threading
 import os
 import logging
+import cryptography
+import crypt
 
 
-class SentFile:
-    def __init__(self, name, ext):
+class RecvdFile:
+    def __init__(self, name: str, ext: str) -> str:
         """
 
         Args:
@@ -29,10 +31,8 @@ class SentFile:
         """
 
         Args:
-            :param data:
-            :type data:
-            :return:
-            :rtype:
+            :param data: data to be added to instance.
+            :type data: byte str
         """
         self.data += data
 
@@ -60,7 +60,7 @@ def recv_all(client_sock):
     if raw_len is None:
         return None
     packet_len = struct.unpack('>I', raw_len)[0]
-    if packet_len > (2048**2):  # If the file is greater than 1mb, it is divided up into 1mb blocks,
+    if packet_len > (2048**2):  # If the file is greater than 2mb, it is divided up into 2mb blocks,
         block = b''             # then block by block received and added to the block variable, then returned
         while len(block) < packet_len:
             block = proc_block(client_sock, (2048**2)) + block
@@ -141,13 +141,12 @@ def evaluate(sock):
         return sock.close()
     if data is None:
         return sock.close()
-    data = data.split(b'::::::::::')
+    data = data.split(b'::::::::::')  # split data along delimiter
     logging.info('[+]  Received data from: %s:%i', ip, port)
-    try:
+    try:  # check if delimiter exists in data.  If this happens, the data will be compromised.
         x = data[-4]
         logging.info("[-]  Delimiter has been found in multiple areas, causing %i bytes to be left out.  "
                      "This causes incomplete file writes.  Exiting now!", len(x))
-
         return sock.close()
     except IndexError:
         pass
@@ -158,7 +157,7 @@ def evaluate(sock):
         send_file(sock, b'FileReceived')
         sock.close()
         data = data[-3]
-        file = SentFile(name, file_ext)
+        file = RecvdFile(name, file_ext)
         file.take_data(data)
         file.evaluate()
     else:
