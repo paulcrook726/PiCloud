@@ -11,11 +11,29 @@ import logging
 
 class SentFile:
     def __init__(self, name, ext):
+        """
+
+        Args:
+            :param name:
+            :type name:
+            :param ext:
+            :type ext:
+            :return:
+            :rtype:
+        """
         self.name = name
         self.ext = ext
         self.data = b''
 
     def take_data(self, data):
+        """
+
+        Args:
+            :param data:
+            :type data:
+            :return:
+            :rtype:
+        """
         self.data += data
 
     def evaluate(self):
@@ -37,6 +55,7 @@ def recv_all(client_sock):
         :returns: None if ``raw_len`` is None.
 
     """
+
     raw_len = proc_block(client_sock, 4)
     if raw_len is None:
         return None
@@ -52,6 +71,18 @@ def recv_all(client_sock):
 
 
 def proc_block(client_sock, length):
+    """
+    Receives a packet of size ``length`` from a socket.
+
+    Args:
+        :param client_sock:
+        :type client_sock:
+        :param length:
+        :type length:
+        :return: ``None`` if nothing received
+        :return: block
+        :rtype: byte str
+    """
     block = b''
     while len(block) < length:
         packet = client_sock.recv(length)
@@ -94,10 +125,10 @@ def evaluate(sock):
     for processing, and, if the filename exists on the local filesystem, sends the corresponding file back to the peer
     socket.
 
-        Args:
-            :param sock: The socket which receives the data.
-            :type sock: socket.socket
-            :returns: ``sock.close()`` or only ends.
+    Args:
+        :param sock: The socket which receives the data.
+        :type sock: socket.socket
+        :returns: ``sock.close()`` or only ends.
 
     """
     (ip, port) = sock.getpeername()
@@ -141,13 +172,13 @@ def pre_proc(filename, is_server=0):
     If the filename exists in the local filesystem, then the corresponding file is read into byte string, processed, and
     returned.
 
-        Args:
-            :param filename: Name of the file to be pre-processed.
-            :type filename: str
-            :param is_server: This flags the function as being used on a server.
-            :type is_server: int
-            :returns: Either file data, file name, or ``FileError``.
-            :rtype: byte str
+    Args:
+        :param filename: Name of the file to be pre-processed.
+        :type filename: str
+        :param is_server: This flags the function as being used on a server.
+        :type is_server: int
+        :returns: Either file data, file name, or ``FileError``.
+        :rtype: byte str
 
     """
 
@@ -187,11 +218,12 @@ class ClientSocket(socket.socket):
         """
         Defines connecting address and connects to it.
 
-        :param host: Host IP or hostname of desired peer socket.
-        :type host: str
-        :param port: Port number of server service.
-        :type port: int
-        :returns:
+        Args:
+            :param host: Host IP or hostname of desired peer socket.
+            :type host: str
+            :param port: Port number of server service.
+            :type port: int
+            :returns:
 
         """
         socket.socket.__init__(self)
@@ -205,9 +237,11 @@ class ServerSocket(socket.socket):
     def __init__(self, port):
         """
         Sets address as reusable.  Binds and listens on the address.
-        :param port: Port number to listen on.
-        :type port: int
-        :returns:
+
+        Args:
+            :param port: Port number to listen on.
+            :type port: int
+            :returns:
 
         """
         socket.socket.__init__(self)
