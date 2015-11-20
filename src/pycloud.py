@@ -30,9 +30,11 @@ def recv_all(client_sock):
     """
     A helper function for ``proc_block()``.  Computes message length and splits into 2mb blocks,
     then calls ``proc_block``.
-    :param client_sock: The socket which is receiving data.
-    :type client_sock: socket.socket
-    :returns: None if ``raw_len`` is None.
+
+    Args:
+        :param client_sock: The socket which is receiving data.
+        :type client_sock: socket.socket
+        :returns: None if ``raw_len`` is None.
 
     """
     raw_len = proc_block(client_sock, 4)
@@ -206,7 +208,7 @@ class ServerSocket(socket.socket):
         :param port: Port number to listen on.
         :type port: int
         :returns:
-        
+
         """
         socket.socket.__init__(self)
         self.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
