@@ -16,13 +16,13 @@ class User:
         The ``User`` class is instanced every time the server receives a .id file.  The instance creates an environment
         for user interface with the server.
 
-        Args:
-            :param name: Username used for naming/registration/login
-            :type name: str
-            :param pwd: User password for logging in/registering
-            :type pwd: str
-            :param sock: socket object used for communicating with the client
-            :type sock: socket.socket
+
+        :param name: Username used for naming/registration/login
+        :type name: str
+        :param pwd: User password for logging in/registering
+        :type pwd: str
+        :param sock: socket object used for communicating with the client
+        :type sock: socket.socket
         """
         self.name = name
         self.pwd = pwd
@@ -32,12 +32,13 @@ class User:
         """
         This method hashes the ``self.pwd`` into a salted hash.
 
-        Args:
-            :param salt: Defaults to ``None``.  If so, a random salt is generated using SHA-512 hashing.
-            :type salt: str
-        Returns:
-            :return: The hashed password is returned (which includes the salt at the beginning.
-            :rtype: str
+
+        :param salt: Defaults to ``None``.  If so, a random salt is generated using SHA-512 hashing.
+        :type salt: str
+
+
+        :return: The hashed password is returned (which includes the salt at the beginning.
+        :rtype: str
         """
         if salt is None:
             salt = crypt.mksalt(crypt.METHOD_SHA512)
@@ -51,9 +52,9 @@ class User:
         """
         This method checks the .pi_users file for ``self.name``.
 
-        Returns:
-            :return: Returns the corresponding password to the instance username.  If it is not found, ``1`` is returned.
-            :rtype: str or int
+
+        :return: Returns the corresponding password to the instance username.  If it is not found, ``1`` is returned.
+        :rtype: str or int
         """
         with open('.pi_users', 'a+') as f:
             f.seek(0)
@@ -70,9 +71,9 @@ class User:
         """
         This method logs in the User instance with the instance password and username.
 
-        Returns:
-            :return: Returns 0 on success.  Returns 1 on failure to login.
-            :rtype: int
+
+        :return: Returns 0 on success.  Returns 1 on failure to login.
+        :rtype: int
         """
         raw_pwd = self.check_pwd()
         msg = 'Incorrect username or password.\n' \
@@ -103,9 +104,9 @@ class User:
         """
         This method registers the User instance with the username and password, and then logs in via ``self.login()``.
 
-        Returns:
-            :return: Returns 1 on failure.  Returns 0 on success.
-            :rtype: int
+
+        :return: Returns 1 on failure.  Returns 0 on success.
+        :rtype: int
         """
         hashed_pwd = self.make_hashed()
         if self.check_pwd() == 1:
@@ -120,11 +121,11 @@ class User:
         """
         This method sends a question to the client, and awaits the response.
 
-        Args:
-            :param msg: This is the question that the client will see.
-            :type msg: str
-            :return: Returns the answer to the question.
-            :rtype: str
+
+        :param msg: This is the question that the client will see.
+        :type msg: str
+        :return: Returns the answer to the question.
+        :rtype: str
         """
         msg = 'InputRequest:' + msg
         send_file(self.sock, bytes(msg, encoding='utf-8'))
@@ -137,13 +138,13 @@ class ReceivedFile:
         """
         The ``ReceivedFile`` class creates objects of the received data from a socket, and evaluates what to do with it.
 
-        Args:
-            :param name: This is the filename.
-            :type name: str
-            :param ext: This is the file extension.
-            :type ext: str
-            :param sock: This is the socket instance which is used for data transfer/reception.
-            :type sock: socket.socket
+
+        :param name: This is the filename.
+        :type name: str
+        :param ext: This is the file extension.
+        :type ext: str
+        :param sock: This is the socket instance which is used for data transfer/reception.
+        :type sock: socket.socket
         """
         self.name = name
         self.ext = ext
@@ -154,9 +155,9 @@ class ReceivedFile:
         """
         This method adds data to the associated filename and extension.
 
-        Args:
-            :param data: Data to be added
-            :type data: byte str
+
+        :param data: Data to be added
+        :type data: byte str
         """
         self.data += data
 
@@ -196,9 +197,9 @@ def get_cwu():
     """
     This function gets the current logged-in user.
 
-    Returns:
-        :return: Username from the .current_user file
-        :rtype: str
+
+    :return: Username from the .current_user file
+    :rtype: str
     """
     with open('.current_user', 'r') as f:
         return f.read()
@@ -208,12 +209,13 @@ def recv_all(client_sock):
     """
     This function receives data on a socket by processing the data length at first.
 
-    Args:
-        :param client_sock: The socket by which data is being received.
-        :type client_sock: socket.socket
-    Returns:
-        :return: Returns ``None`` if no data is received. Otherwise returns the data received.
-        :rtype: None or byte str
+
+    :param client_sock: The socket by which data is being received.
+    :type client_sock: socket.socket
+
+
+    :return: Returns ``None`` if no data is received. Otherwise returns the data received.
+    :rtype: None or byte str
     """
     raw_len = proc_block(client_sock, 4)
     if raw_len is None:
@@ -233,14 +235,15 @@ def proc_block(client_sock, length):
     """
     This is a helper function of ``recv_all()``.  It receives data according to ``length``.
 
-    Args:
-        :param client_sock: The socket by which data is received.
-        :type client_sock: socket.socket
-        :param length: The length of the data to check for and receive.
-        :type length: int
-    Returns:
-        :return: Returns ``None`` if no packets are received.  Otherwise returns the block of data received.
-        :rtype: None or byte str
+
+    :param client_sock: The socket by which data is received.
+    :type client_sock: socket.socket
+    :param length: The length of the data to check for and receive.
+    :type length: int
+
+
+    :return: Returns ``None`` if no packets are received.  Otherwise returns the block of data received.
+    :rtype: None or byte str
     """
     block = b''
     while len(block) < length:
@@ -255,16 +258,17 @@ def send_file(sock, b_data):
     """
     This function sends a byte string over a connected socket.
 
-    Args:
-        :param sock: The socket by which data is sent.
-        :type sock: socket.socket
-        :param b_data: The data to be sent.
-        :type b_data: byte str
-    Returns:
-        :return: Returns ``0`` upon success.
-        :rtype: int
-        :return: Returns ``None`` on failure.
-        :rtype: None
+
+    :param sock: The socket by which data is sent.
+    :type sock: socket.socket
+    :param b_data: The data to be sent.
+    :type b_data: byte str
+
+
+    :return: Returns ``0`` upon success.
+    :rtype: int
+    :return: Returns ``None`` on failure.
+    :rtype: None
     """
     length = len(b_data)
     b_data = struct.pack('>I', length) + b_data
@@ -287,19 +291,18 @@ def evaluate(sock):
     Data is received and processed depending on whether it contains the primary delimiter for files, or whether it
     contains certain keywords used for server communication.
 
-    Args:
 
-        :param sock: The socket by which data is received.
-        :type sock: socket.socket
+    :param sock: The socket by which data is received.
+    :type sock: socket.socket
 
-    Returns:
-        :return: Returns ``0`` on success.
-        :rtype: int
-        :return: Returns ``1`` on failure.  This is especially important when determining when
-        the server/client communication is over, or whether it is still going to go on.  A return of ``1`` indicates that
-        no more communication will go on.  ``0`` indicates that communication will happen again, and consequently,
-        ``evaluate()`` should be called again.
-        :rtype: int
+
+    :return: Returns ``0`` on success.
+    :rtype: int
+    :return: Returns ``1`` on failure.  This is especially important when determining when
+    the server/client communication is over, or whether it is still going to go on.  A return of ``1`` indicates that
+    no more communication will go on.  ``0`` indicates that communication will happen again, and consequently,
+    ``evaluate()`` should be called again.
+    :rtype: int
     """
     (ip, port) = sock.getpeername()
     data = recv_all(sock)
@@ -352,21 +355,21 @@ def pre_proc(filename, is_server=0):
     """
     This function processes a filename by whether or not it exists in the current working directory.
 
-    Args:
-        :param filename: The filename of the file you want to process.
-        :type filename: str
-        :param is_server: This acts as a flag for determining how exactly the function should work.
-        :type is_server: int
 
-    Returns:
-        :return: Returns the file data if it is found in the local filesystem.
-        :rtype: byte str
-        :return: Returns the pre-processed filename and extension if the function
-        acts as a client. (For requesting files)
-        :rtype: byte str
-        :return: Returns ``FileError`` if function is acting as a server, and the file could not be
-        found in the local filesystem.
-        :rtype: byte str
+    :param filename: The filename of the file you want to process.
+    :type filename: str
+    :param is_server: This acts as a flag for determining how exactly the function should work.
+    :type is_server: int
+
+
+    :return: Returns the file data if it is found in the local filesystem.
+    :rtype: byte str
+    :return: Returns the pre-processed filename and extension if the function
+    acts as a client. (For requesting files)
+    :rtype: byte str
+    :return: Returns ``FileError`` if function is acting as a server, and the file could not be
+    found in the local filesystem.
+    :rtype: byte str
     """
     file_ext = bytes(filename.split('.')[1], encoding='utf-8')
     name = bytes(filename.split('.')[0], encoding='utf-8')
@@ -402,11 +405,11 @@ class ClientSocket(socket.socket):
         """
         Defines connecting address and connects to it.
 
-        Args:
-            :param host: Host IP or hostname of desired peer socket.
-            :type host: str
-            :param port: Port number of server service.
-            :type port: int
+
+        :param host: Host IP or hostname of desired peer socket.
+        :type host: str
+        :param port: Port number of server service.
+        :type port: int
         """
         socket.socket.__init__(self)
         self.host = host
@@ -420,9 +423,9 @@ class ServerSocket(socket.socket):
         """
         Sets address as reusable.  Binds and listens on the address.
 
-        Args:
-            :param port: Port number to listen on.
-            :type port: int
+
+        :param port: Port number to listen on.
+        :type port: int
         """
         socket.socket.__init__(self)
         self.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
