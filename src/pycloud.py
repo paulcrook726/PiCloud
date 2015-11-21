@@ -214,8 +214,10 @@ def recv_all(client_sock):
     :type client_sock: socket.socket
 
 
-    :return: Returns ``None`` if no data is received. Otherwise returns the data received.
-    :rtype: None or byte str
+    :return: Returns ``None`` if no data is received.
+    :rtype: None
+    :return: Otherwise returns the data received.
+    :rtype: byte str
     """
     raw_len = proc_block(client_sock, 4)
     if raw_len is None:
@@ -299,9 +301,9 @@ def evaluate(sock):
     :return: Returns ``0`` on success.
     :rtype: int
     :return: Returns ``1`` on failure.  This is especially important when determining when
-    the server/client communication is over, or whether it is still going to go on.  A return of ``1`` indicates that
-    no more communication will go on.  ``0`` indicates that communication will happen again, and consequently,
-    ``evaluate()`` should be called again.
+             the server/client communication is over, or whether it is still going to go on.  A return of ``1`` indicates that
+             no more communication will go on.  ``0`` indicates that communication will happen again, and consequently,
+             ``evaluate()`` should be called again.
     :rtype: int
     """
     (ip, port) = sock.getpeername()
@@ -368,7 +370,7 @@ def pre_proc(filename, is_server=0):
     acts as a client. (For requesting files)
     :rtype: byte str
     :return: Returns ``FileError`` if function is acting as a server, and the file could not be
-    found in the local filesystem.
+             found in the local filesystem.
     :rtype: byte str
     """
     file_ext = bytes(filename.split('.')[1], encoding='utf-8')
