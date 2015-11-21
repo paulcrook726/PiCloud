@@ -7,55 +7,192 @@ import struct
 import threading
 import os
 import logging
-import cryptography
 import crypt
 
 
-class RecvdFile:
-    def __init__(self, name: str, ext: str) -> str:
+class User:
+    def __init__(self, name, pwd, sock):
         """
 
-        Args:
-            :param name:
-            :type name:
-            :param ext:
-            :type ext:
-            :return:
-            :rtype:
+        :param name:
+        :type name:
+        :param pwd:
+        :type pwd:
+        :param sock:
+        :type sock:
+        :return:
+        :rtype:
+        """
+        self.name = name
+        self.pwd = pwd
+        self.sock = sock
+
+    def make_hashed(self, salt=None):
+        """
+
+        :param salt:
+        :type salt:
+        :return:
+        :rtype:
+        """
+        if salt is None:
+            salt = crypt.mksalt(crypt.METHOD_SHA512)
+            hashed_pwd = crypt.crypt(self.pwd, salt)
+            return hashed_pwd
+        else:
+            hashed_pwd = crypt.crypt(self.pwd, salt)
+            return hashed_pwd
+
+    def check_pwd(self):
+        """
+
+        :return:
+        :rtype:
+        """
+        with open('.pi_users', 'a+') as f:
+            f.seek(0)
+            for line in f:
+                line_list = line.split(':')
+                if self.name == line_list[0]:
+                    raw_pwd = line_list[1].strip('\n')
+                    return raw_pwd
+                else:
+                    pass
+            return 1
+
+    def login(self):
+        """
+
+        :return:
+        :rtype:
+        """
+        raw_pwd = self.check_pwd()
+        msg = 'Incorrect username or password.\n' \
+              '[1] Exit\n' \
+              '[2] Register an account under this name and password\n'
+        if raw_pwd == 1:
+            answ = self.input_request(msg)
+            if answ == '1':
+                pass
+            elif answ == '2':
+                self.register()
+            return 1
+        hashed_pwd = self.make_hashed(salt=raw_pwd)
+        if raw_pwd == hashed_pwd:
+            with open('.current_user', 'w') as f:
+                f.write(self.name)
+
+            return 0
+        else:
+            answ = self.input_request(msg)
+            if answ == '1':
+                pass
+            elif answ == '2':
+                self.register()
+            return 1
+
+    def register(self):
+        """
+
+        :return:
+        :rtype:
+        """
+        hashed_pwd = self.make_hashed()
+        if self.check_pwd() == 1:
+            with open('.pi_users', 'a') as f:
+                line = self.name + ':' + hashed_pwd + '\n'
+                f.write(line)
+            return self.login()
+        else:
+            return 1
+
+    def input_request(self, msg):
+        msg = 'InputRequest:' + msg
+        send_file(self.sock, bytes(msg, encoding='utf-8'))
+        answer = str(recv_all(self.sock), encoding='utf-8')
+        return answer
+
+
+class ReceivedFile:
+    def __init__(self, name, ext, sock):
+        """
+
+        :param name:
+        :type name:
+        :param ext:
+        :type ext:
+        :param sock:
+        :type sock:
+        :return:
+        :rtype:
         """
         self.name = name
         self.ext = ext
         self.data = b''
+        self.sock = sock
 
     def take_data(self, data):
         """
 
-        Args:
-            :param data: data to be added to instance.
-            :type data: byte str
+        :param data:
+        :type data:
+        :return:
+        :rtype:
         """
         self.data += data
 
     def evaluate(self):
-        if self.ext == 'id':
-            something = ''
+        """
+
+        :return:
+        :rtype:
+        """
+        if self.ext == 'cert':
+            pass
+        elif self.ext == 'id':
+            if os.path.exists(self.name):  # login request from client
+                user = User(self.name, str(self.data, encoding='utf-8'), self.sock)
+                login = user.login()
+                if login == 1:
+                    logging.info('[-]  Failed login attempt by %s', self.name)
+                    send_file(self.sock, b'[-]  Login attempt failed')
+                elif login == 0:
+                    logging.info('[+]  Successful login attempt by %s', self.name)
+                    send_file(self.sock, b'[+]  Login attempt successful')
+            else:  # registration request from client
+                os.makedirs(self.name)
+                user = User(self.name, str(self.data, encoding='utf-8'), self.sock)
+                reg = user.register()
+                if reg == 1:
+                    logging.info('[-]  Failed registration attempt from %s', self.name)
+                    send_file(self.sock, b'[-]  Registration attempt failed')
+                elif reg == 0:
+                    logging.info('[-]  Successful user account registration for %s', self.name)
+                    send_file(self.sock, b'[+]  Registration attempt successful')
         else:
-            with open(self.name+'.'+self.ext, 'wb') as f:
+            current_user = get_cwu()
+            with open(current_user + '/' + self.name+'.'+self.ext, 'wb') as f:
                 f.write(self.data)
+
+
+def get_cwu():
+    """
+
+    :return:
+    :rtype:
+    """
+    with open('.current_user', 'r') as f:
+        return f.read()
 
 
 def recv_all(client_sock):
     """
-    A helper function for ``proc_block()``.  Computes message length and splits into 2mb blocks,
-    then calls ``proc_block``.
 
-    Args:
-        :param client_sock: The socket which is receiving data.
-        :type client_sock: socket.socket
-        :returns: None if ``raw_len`` is None.
-
+    :param client_sock:
+    :type client_sock:
+    :return:
+    :rtype:
     """
-
     raw_len = proc_block(client_sock, 4)
     if raw_len is None:
         return None
@@ -64,7 +201,7 @@ def recv_all(client_sock):
         block = b''             # then block by block received and added to the block variable, then returned
         while len(block) < packet_len:
             block = proc_block(client_sock, (2048**2)) + block
-            print((len(block)/packet_len)*100, '% completed')
+            print('[+]  Receiving...')
         return block
     else:
         return proc_block(client_sock, packet_len)
@@ -72,16 +209,13 @@ def recv_all(client_sock):
 
 def proc_block(client_sock, length):
     """
-    Receives a packet of size ``length`` from a socket.
 
-    Args:
-        :param client_sock:
-        :type client_sock:
-        :param length:
-        :type length:
-        :return: ``None`` if nothing received
-        :return: block
-        :rtype: byte str
+    :param client_sock:
+    :type client_sock:
+    :param length:
+    :type length:
+    :return:
+    :rtype:
     """
     block = b''
     while len(block) < length:
@@ -94,14 +228,13 @@ def proc_block(client_sock, length):
 
 def send_file(sock, b_data):
     """
-    The ``send_file`` function appends the length of a file to the end of the data, and sends it on a socket.
 
-    Args:
-        :param sock: The socket which sends the file.
-        :type sock: socket.socket
-        :param b_data: The byte string data to be sent.
-        :type b_data: byte str
-
+    :param sock:
+    :type sock:
+    :param b_data:
+    :type b_data:
+    :return:
+    :rtype:
     """
     length = len(b_data)
     b_data = struct.pack('>I', length) + b_data
@@ -111,76 +244,76 @@ def send_file(sock, b_data):
         to_send = b_data[:buffer_size-1]
         just_sent = sock.send(to_send)
         sent += just_sent
-        print('[+]  Upload %i% complete', ((sent/length)*100))
+        print('[+]  Sending..')
         b_data = b_data[buffer_size-1:]
     logging.info('[+]  Successfully sent data')
 
 
 def evaluate(sock):
     """
-    This function takes a socket and receives the incoming and evaluates it based on its features.
 
-    If a normal file is received, the socket sends of a confirmation message, and then inputs the file into a SentFile
-    object instance.  If the received data is just a name, it assumes a request is being made, queries the name
-    for processing, and, if the filename exists on the local filesystem, sends the corresponding file back to the peer
-    socket.
-
-    Args:
-        :param sock: The socket which receives the data.
-        :type sock: socket.socket
-        :returns: ``sock.close()`` or only ends.
-
+    :param sock:
+    :type sock:
+    :return:
+    :rtype:
     """
     (ip, port) = sock.getpeername()
     data = recv_all(sock)
-    if data == b'FileError':
-        logging.info('[-]  Request could not be found')
-        return sock.close()
-    if data == b'FileReceived':
-        logging.info('[+]  Sent file was successfully received')
-        return sock.close()
-    if data is None:
-        return sock.close()
-    data = data.split(b'::::::::::')  # split data along delimiter
-    logging.info('[+]  Received data from: %s:%i', ip, port)
-    try:  # check if delimiter exists in data.  If this happens, the data will be compromised.
-        x = data[-4]
-        logging.info("[-]  Delimiter has been found in multiple areas, causing %i bytes to be left out.  "
-                     "This causes incomplete file writes.  Exiting now!", len(x))
-        return sock.close()
-    except IndexError:
-        pass
-    file_ext = str(data[-1], encoding='utf-8')
-    name = str(data[-2], encoding='utf-8')
-    logging.info('[+]  The file %s.%s was received.', name, file_ext)
-    if len(data) > 2:
-        send_file(sock, b'FileReceived')
-        sock.close()
-        data = data[-3]
-        file = RecvdFile(name, file_ext)
-        file.take_data(data)
-        file.evaluate()
-    else:
-        logging.info('[-]  File Request')
-        send_file(sock, pre_proc((name+'.'+file_ext), is_server=1))
+    if b'::::::::::' in data:  # indicated that the data is a filename (possibly only a request for a filename)
+        data = data.split(b'::::::::::')  # split data along delimiter
+        logging.info('[+]  Received data from: %s:%i', ip, port)
+        try:  # check if delimiter exists in data.  If this happens, the data will be compromised.
+            x = data[-4]
+            logging.info("[-]  Delimiter has been found in multiple areas, causing %i bytes to be left out.  "
+                         "This causes incomplete file writes.  Exiting now!", len(x))
+            sock.close()
+            return 1
+        except IndexError:
+            pass
+        file_ext = str(data[-1], encoding='utf-8')
+        name = str(data[-2], encoding='utf-8')
+        logging.info('[+]  The file %s.%s was received.', name, file_ext)
+        if len(data) > 2:
+            send_file(sock, b'FileReceived')
+            data = data[-3]
+            file = ReceivedFile(name, file_ext, sock)
+            file.take_data(data)
+            file.evaluate()
+            return 0
+        else:
+            logging.info('[-]  File Request')
+            send_file(sock, pre_proc((name+'.'+file_ext), is_server=1))
+            return 0
+    else:  # data is a small message used in the transfer protocol
+        if data == b'FileError':
+            logging.info('[-]  Request could not be found')
+            sock.close()
+            return 1
+        elif data == b'FileReceived':
+            logging.info('[+]  Sent file was successfully received')
+            return 0
+        elif data is None:
+            sock.close()
+            return 1
+        elif data.split(b':')[0] == b'InputRequest':
+
+            answer = input(str(data.split(b':')[1], encoding='utf-8'))
+            send_file(sock, bytes(answer, encoding='utf-8'))
+            return 0
+        else:
+            logging.info(str(data, encoding='utf-8'))
 
 
 def pre_proc(filename, is_server=0):
-    """The ''pre_proc'' function processes a filename, and returning the answer.
-
-    If the filename exists in the local filesystem, then the corresponding file is read into byte string, processed, and
-    returned.
-
-    Args:
-        :param filename: Name of the file to be pre-processed.
-        :type filename: str
-        :param is_server: This flags the function as being used on a server.
-        :type is_server: int
-        :returns: Either file data, file name, or ``FileError``.
-        :rtype: byte str
-
     """
 
+    :param filename:
+    :type filename:
+    :param is_server:
+    :type is_server:
+    :return:
+    :rtype:
+    """
     file_ext = bytes(filename.split('.')[1], encoding='utf-8')
     name = bytes(filename.split('.')[0], encoding='utf-8')
     delimiter = b'::::::::::'
@@ -258,6 +391,3 @@ class ServerSocket(socket.socket):
             logging.info('[+]  Incoming connection from: %s:%i', ip, port)
             new_thread = threading.Thread(target=evaluate, args=(new_socket,))
             new_thread.start()
-
-
-
