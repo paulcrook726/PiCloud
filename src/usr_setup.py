@@ -13,20 +13,19 @@ def check_pwd(name):
     :return:
     :rtype:
     """
-    with open('.pi_users', 'r') as f:
+    with open('.pi_users', 'a+') as f:
+        f.seek(0)
         for line in f:
             line_list = line.split(':')
             if name == line_list[0]:
-                raw_pwd = line_list[1].split('$')
-                pwd = raw_pwd[2]
-                salt = raw_pwd[1]
-                return pwd, salt
+                raw_pwd = line_list[1].strip('\n')
+                return raw_pwd
             else:
                 pass
         return 1
 
 
-def salted_hash(pwd, salt=None):
+def make_hashed(pwd, salt=None):
     """
 
     :param pwd:
@@ -38,8 +37,11 @@ def salted_hash(pwd, salt=None):
     """
     if salt is None:
         salt = crypt.mksalt(crypt.METHOD_SHA512)
-    hashed_pwd = crypt.crypt(pwd, salt)
-    return hashed_pwd
+        hashed_pwd = crypt.crypt(pwd, salt)
+        return hashed_pwd
+    else:
+        hashed_pwd = crypt.crypt(pwd, salt)
+        return hashed_pwd
 
 
 def get_info():
@@ -81,11 +83,11 @@ def login(name, pwd):
     :rtype:
     """
     try:
-        (stored_pwd, salt) = check_pwd(name)
-    except check_pwd(name) == 1:
+        raw_pwd = check_pwd(name)
+    except:
         return false_pwd_usr()
-    hashed_pwd = salted_hash(pwd, salt)
-    if stored_pwd == hashed_pwd:
+    hashed_pwd = make_hashed(pwd, salt=raw_pwd)
+    if raw_pwd == hashed_pwd:
         with open('.current_user', 'w') as f:
             f.write(name)
         return 0
@@ -103,7 +105,7 @@ def register(name, pwd):
     :return:
     :rtype:
     """
-    hashed_pwd = salted_hash(pwd)
+    hashed_pwd = make_hashed(pwd)
     if check_pwd(name) == 1:
         with open('.pi_users', 'a') as f:
             line = name + ':' + hashed_pwd + '\n'
