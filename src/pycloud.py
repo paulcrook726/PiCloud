@@ -334,7 +334,7 @@ def evaluate(sock):
             return 1
         elif data == b'FileReceived':
             logging.info('[+]  Sent file was successfully received')
-            return 0
+            return 1
         elif data is None:
             sock.close()
             return 1
