@@ -37,12 +37,12 @@ class User:
         :return: Returns the corresponding password to the instance username.  If it is not found, ``1`` is returned.
         :rtype: str or int
         """
-        with open('.pi_users', 'a+') as f:
+        with open('.pi_users', 'ab+') as f:
             f.seek(0)
             for line in f:
-                line_list = line.split(':')
-                if self.name == line_list[0]:
-                    raw_pwd = line_list[2].strip('\n')
+                line_list = line.split(b':')
+                if bytes(self.name, encoding='utf-8') == line_list[0]:
+                    raw_pwd = line_list[2].strip(b'\n')
                     salt = line_list[1]
                     return raw_pwd, salt
                 else:
@@ -64,7 +64,7 @@ class User:
         if raw_pwd == 1:
             answ = self.input_request(msg)
             if answ == '1':
-                pass
+                return 1
             elif answ == '2':
                 self.register()
             return 1
@@ -91,8 +91,8 @@ class User:
         """
         hashed_pwd, salt = hash_gen(self.pwd)
         if self.check_pwd() == 1:
-            with open('.pi_users', 'a') as f:
-                line = self.name + ':' + salt + ':' + hashed_pwd + '\n'
+            with open('.pi_users', 'ab') as f:
+                line = bytes(self.name, encoding='utf-8') + b':' + salt + b':' + hashed_pwd + b'\n'
                 f.write(line)
             return self.login()
         else:
@@ -175,10 +175,10 @@ class ReceivedFile:
 
 
 def hash_gen(pwd, salt=None):
+    pwd = bytes(pwd, encoding='utf-8')
     if salt is None:
-        salt = uuid.uuid4().hex
-
-    hashed_pwd = hashlib.pbkdf2_hmac('sha512', bytes(pwd, encoding='utf-8'), salt, 100000)
+        salt = uuid.uuid4().bytes
+    hashed_pwd = hashlib.pbkdf2_hmac('sha512', pwd, salt, 100000)
     return hashed_pwd, salt
 
 
