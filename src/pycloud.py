@@ -7,7 +7,8 @@ import struct
 import threading
 import os
 import logging
-import crypt
+import hashlib
+import uuid
 
 
 class User:
@@ -28,26 +29,6 @@ class User:
         self.pwd = pwd
         self.sock = sock
 
-    def make_hashed(self, salt=None):
-        """
-        This method hashes the ``self.pwd`` into a salted hash.
-
-
-        :param salt: Defaults to ``None``.  If so, a random salt is generated using SHA-512 hashing.
-        :type salt: str
-
-
-        :return: The hashed password is returned (which includes the salt at the beginning.
-        :rtype: str
-        """
-        if salt is None:
-            salt = crypt.mksalt(crypt.METHOD_SHA512)
-            hashed_pwd = crypt.crypt(self.pwd, salt)
-            return hashed_pwd
-        else:
-            hashed_pwd = crypt.crypt(self.pwd, salt)
-            return hashed_pwd
-
     def check_pwd(self):
         """
         This method checks the .pi_users file for ``self.name``.
@@ -61,8 +42,9 @@ class User:
             for line in f:
                 line_list = line.split(':')
                 if self.name == line_list[0]:
-                    raw_pwd = line_list[1].strip('\n')
-                    return raw_pwd
+                    raw_pwd = line_list[2].strip('\n')
+                    salt = line_list[1]
+                    return raw_pwd, salt
                 else:
                     pass
             return 1
@@ -75,7 +57,7 @@ class User:
         :return: Returns 0 on success.  Returns 1 on failure to login.
         :rtype: int
         """
-        raw_pwd = self.check_pwd()
+        raw_pwd, salt = self.check_pwd()
         msg = 'Incorrect username or password.\n' \
               '[1] Exit\n' \
               '[2] Register an account under this name and password\n'
@@ -86,18 +68,17 @@ class User:
             elif answ == '2':
                 self.register()
             return 1
-        hashed_pwd = self.make_hashed(salt=raw_pwd)
-        if raw_pwd == hashed_pwd:
+
+        if verify_hash(self.pwd, raw_pwd, salt=salt) is True:
             with open('.current_user', 'w') as f:
                 f.write(self.name)
-
             return 0
         else:
             answ = self.input_request(msg)
             if answ == '1':
-                pass
+                return 1
             elif answ == '2':
-                self.register()
+                return self.register()
             return 1
 
     def register(self):
@@ -108,10 +89,10 @@ class User:
         :return: Returns 1 on failure.  Returns 0 on success.
         :rtype: int
         """
-        hashed_pwd = self.make_hashed()
+        hashed_pwd, salt = hash_gen(self.pwd)
         if self.check_pwd() == 1:
             with open('.pi_users', 'a') as f:
-                line = self.name + ':' + hashed_pwd + '\n'
+                line = self.name + ':' + salt + ':' + hashed_pwd + '\n'
                 f.write(line)
             return self.login()
         else:
@@ -191,6 +172,19 @@ class ReceivedFile:
             current_user = get_cwu()
             with open(current_user + '/' + self.name+'.'+self.ext, 'wb') as f:
                 f.write(self.data)
+
+
+def hash_gen(pwd, salt=None):
+    if salt is None:
+        salt = uuid.uuid4().hex
+
+    hashed_pwd = hashlib.pbkdf2_hmac('sha512', bytes(pwd, encoding='utf-8'), salt, 100000)
+    return hashed_pwd, salt
+
+
+def verify_hash(pwd, hashed_pwd, salt):
+    possible_pwd, salt = hash_gen(pwd, salt=salt)
+    return possible_pwd == hashed_pwd
 
 
 def get_cwu():
@@ -301,7 +295,7 @@ def evaluate(sock):
     :return: Returns ``0`` on success.
     :rtype: int
     :return: Returns ``1`` on failure.  This is especially important when determining when
-             the server/client communication is over, or whether it is still going to go on.  A return of ``1`` indicates that
+             the server/client communication is over, or whether it will go on.  A return of ``1`` indicates that
              no more communication will go on.  ``0`` indicates that communication will happen again, and consequently,
              ``evaluate()`` should be called again.
     :rtype: int
