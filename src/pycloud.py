@@ -88,8 +88,6 @@ class ConnectionSession:
         hex_keygen()
         send_file(self.sock, pre_proc('.public.key'))
         process_key_file(recv_all(self.sock))
-        while self.start() == 0:
-            self.control()
 
     def process_file(self, file):
         file_list = file.split(b'::::::::::')  # split data along delimiter
@@ -108,8 +106,7 @@ class ConnectionSession:
         if len(file_list) > 2:
             send_encrypted_file(self.sock, b'FileReceived')
             file_data = file_list[-3]
-            self.evaluate_contents(file_data)
-            return 0
+            return self.evaluate_contents(file_data)
         else:
             logging.info('[-]  File Request')
             send_encrypted_file(self.sock, pre_proc((self.filename + '.' + self.ext), is_server=1))
@@ -124,32 +121,39 @@ class ConnectionSession:
                 if log_in == 1:
                     logging.info('[-]  Failed login attempt by %s', self.username)
                     send_encrypted_file(self.sock, b'[-]  Login attempt failed')
+                    return log_in
                 elif log_in == 0:
                     logging.info('[+]  Successful login attempt by %s', self.username)
                     send_encrypted_file(self.sock, b'[+]  Login attempt successful')
+                    return log_in
             else:  # registration request from client
                 os.makedirs(self.username)
                 reg = self.register()
                 if reg == 1:
                     logging.info('[-]  Failed registration attempt from %s', self.username)
                     send_encrypted_file(self.sock, b'[-]  Registration attempt failed')
+                    return reg
                 elif reg == 0:
                     logging.info('[-]  Successful user account registration for %s', self.username)
                     send_encrypted_file(self.sock, b'[+]  Registration attempt successful')
+                    return reg
         else:
             current_user = self.username
             with open(current_user + '/' + self.filename + '.' + self.ext, 'wb') as f:
                 f.write(file_data)
+            return 0
 
     def start(self):
         encrypted_msg = recv_all(self.sock)
+        if encrypted_msg is None:
+            return 1
         private_key = get_private_key()
         public_key = get_other_public_key()
         box = nacl.public.Box(private_key, public_key)
         msg = box.decrypt(encrypted_msg)
         if b'::::::::::' in msg:  # indicated that the msg is a filename (possibly only a request for a filename)
             file = msg
-            self.process_file(file)
+            return self.process_file(file)
         else:  # msg is a small message used in the transfer protocol
             if msg == b'FileError':
                 logging.info('[-]  Request could not be found')
@@ -183,8 +187,7 @@ class ConnectionSession:
             if answ == '1':
                 return 1
             elif answ == '2':
-                self.register()
-            return 1
+                return self.register()
         if verify_hash(self.pwd, raw_pwd, salt=salt) is True:
             return 0
         else:
@@ -193,7 +196,6 @@ class ConnectionSession:
                 return 1
             elif answ == '2':
                 return self.register()
-            return 1
 
     def input_request(self, msg):
         msg = 'InputRequest:' + msg
@@ -212,37 +214,11 @@ class ConnectionSession:
             return 1
 
 
-class ReceivedFile:
-    def __init__(self, name, ext, sock):
-        """
-        The ``ReceivedFile`` class creates objects of the received data from a socket, and evaluates what to do with it.
-
-
-        :param name: This is the filename.
-        :type name: str
-        :param ext: This is the file extension.
-        :type ext: str
-        :param sock: This is the socket instance which is used for data transfer/reception.
-        :type sock: socket.socket
-        """
-        self.name = name
-        self.ext = ext
-        self.data = b''
-        self.sock = sock
-
-    def take_data(self, data):
-        """
-        This method adds data to the associated filename and extension.
-
-
-        :param data: Data to be added
-        :type data: byte str
-        """
-        self.data += data
-
-
 def hash_gen(pwd, salt=None):
-    pwd = bytes(pwd, encoding='utf-8')
+    try:
+        pwd = bytes(pwd, encoding='utf-8')
+    except TypeError:
+        pass
     if salt is None:
         salt = uuid.uuid4().bytes
     hashed_pwd = hashlib.pbkdf2_hmac('sha512', pwd, salt, 100000)
@@ -396,7 +372,7 @@ def hex_keygen():
     public_key = public_key.encode(encoder=nacl.encoding.HexEncoder)
     with open('.public.key', 'wb') as f:
         f.write(public_key)
-    with open('.private_key', 'wb') as t:
+    with open('.private.key', 'wb') as t:
         t.write(private_key)
 
 
@@ -411,18 +387,19 @@ def get_usr_pwd(username):
                 return raw_pwd, salt
             else:
                 pass
-        return 1
+    return 1
 
 
 def get_other_public_key():
     with open('.otherpublic.key', 'rb') as f:
-        public_key = f.readall()
+        public_key = f.readline()
+    public_key = public_key.split(b'::::::::::')[0]
     return nacl.public.PublicKey(public_key, encoder=nacl.encoding.HexEncoder)
 
 
 def get_private_key():
     with open('.private.key', 'rb') as f:
-        private_key = f.readall()
+        private_key = f.readline()
     return nacl.public.PrivateKey(private_key, encoder=nacl.encoding.HexEncoder)
 
 
