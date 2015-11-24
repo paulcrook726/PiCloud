@@ -391,18 +391,18 @@ def get_usr_pwd(username):
 
 
 def get_other_public_key():
-    with open('.otherpublic.key', 'rb') as f:
+    with open('.otherpublic.key', 'r+b') as f:
         public_key = f.readline()
     public_key = public_key.split(b'::::::::::')[0]
     return nacl.public.PublicKey(public_key, encoder=nacl.encoding.HexEncoder)
 
 
 def get_private_key():
-    with open('.private.key', 'rb') as f:
+    with open('.private.key', 'r+b') as f:
         private_key = f.readline()
     return nacl.public.PrivateKey(private_key, encoder=nacl.encoding.HexEncoder)
 
 
 def process_key_file(key_file):
-    with open('.otherpublic.key', 'wb') as file:
+    with open('.otherpublic.key', 'w+b') as file:
         file.write(key_file)
