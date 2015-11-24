@@ -9,6 +9,57 @@ import os
 import logging
 import hashlib
 import uuid
+import nacl.public
+import nacl.encoding
+import nacl.utils
+
+
+class ClientSocket(socket.socket):
+    """
+    This is a subclass of ``socket.socket``.  Introduced primarily for simplicity and the setting of pre-defined
+    values.
+    """
+    def __init__(self, host, port):
+        """
+        Defines connecting address and connects to it.
+
+
+        :param host: Host IP or hostname of desired peer socket.
+        :type host: str
+        :param port: Port number of server service.
+        :type port: int
+        """
+        socket.socket.__init__(self)
+        self.host = host
+        self.port = port
+        self.connect((self.host, self.port))
+
+
+class ServerSocket(socket.socket):
+    """This is a subclass of ``socket.socket``.  Creates a socket with a few pre-defined variables."""
+    def __init__(self, port):
+        """
+        Sets address as reusable.  Binds and listens on the address.
+
+
+        :param port: Port number to listen on.
+        :type port: int
+        """
+        socket.socket.__init__(self)
+        self.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.port = port
+        self.bind((socket.gethostname(), self.port))
+        self.listen(5)
+
+    def activate(self):
+        """
+        This activates the main server event loop for accepting incoming connections.
+        """
+        while True:
+            (new_socket, (ip, port)) = self.accept()
+            logging.info('[+]  Incoming connection from: %s:%i', ip, port)
+            new_thread = threading.Thread(target=ConnectionSession, args=(new_socket, (ip, port), ))
+            new_thread.start()
 
 
 class ConnectionSession:
@@ -18,6 +69,27 @@ class ConnectionSession:
         self.port = address[1]
         self.filename = ''
         self.ext = ''
+        self.username = ''
+        self.pwd = b''
+        self.is_server = is_server
+        if self.is_server is True:
+            self.server()
+        elif self.is_server is False:
+            self.client()
+
+    def server(self):
+        hex_keygen()
+        process_key_file(recv_all(self.sock))
+        send_file(self.sock, pre_proc('.public.key', is_server=1))
+        while self.start() == 0:
+            pass
+
+    def client(self):
+        hex_keygen()
+        send_file(self.sock, pre_proc('.public.key'))
+        process_key_file(recv_all(self.sock))
+        while self.start() == 0:
+            self.control()
 
     def process_file(self, file):
         file_list = file.split(b'::::::::::')  # split data along delimiter
@@ -34,88 +106,75 @@ class ConnectionSession:
         self.filename = str(file_list[-2], encoding='utf-8')
         logging.info('[+]  The file %s.%s was received.', self.filename, self.ext)
         if len(file_list) > 2:
-            send_file(self.sock, b'FileReceived')
-            data = file_list[-3]
-            file = ReceivedFile(name, file_ext, sock)
-            file.take_data(data)
-            file.evaluate()
+            send_encrypted_file(self.sock, b'FileReceived')
+            file_data = file_list[-3]
+            self.evaluate_contents(file_data)
             return 0
         else:
             logging.info('[-]  File Request')
-            send_file(self.sock, pre_proc((self.filename+'.'+ self.ext), is_server=1))
+            send_encrypted_file(self.sock, pre_proc((self.filename + '.' + self.ext), is_server=1))
             return 0
-        
-    def process(self):
-        data = recv_all(self.sock)
-        if b'::::::::::' in data:  # indicated that the data is a filename (possibly only a request for a filename)
-            file = data
+
+    def evaluate_contents(self, file_data):
+        if self.ext == 'id':
+            self.username = self.filename
+            self.pwd = file_data
+            if os.path.exists(self.username):  # login request from client
+                log_in = self.login()
+                if log_in == 1:
+                    logging.info('[-]  Failed login attempt by %s', self.username)
+                    send_encrypted_file(self.sock, b'[-]  Login attempt failed')
+                elif log_in == 0:
+                    logging.info('[+]  Successful login attempt by %s', self.username)
+                    send_encrypted_file(self.sock, b'[+]  Login attempt successful')
+            else:  # registration request from client
+                os.makedirs(self.username)
+                reg = self.register()
+                if reg == 1:
+                    logging.info('[-]  Failed registration attempt from %s', self.username)
+                    send_encrypted_file(self.sock, b'[-]  Registration attempt failed')
+                elif reg == 0:
+                    logging.info('[-]  Successful user account registration for %s', self.username)
+                    send_encrypted_file(self.sock, b'[+]  Registration attempt successful')
+        else:
+            current_user = self.username
+            with open(current_user + '/' + self.filename + '.' + self.ext, 'wb') as f:
+                f.write(file_data)
+
+    def start(self):
+        encrypted_msg = recv_all(self.sock)
+        private_key = get_private_key()
+        public_key = get_other_public_key()
+        box = nacl.public.Box(private_key, public_key)
+        msg = box.decrypt(encrypted_msg)
+        if b'::::::::::' in msg:  # indicated that the msg is a filename (possibly only a request for a filename)
+            file = msg
             self.process_file(file)
-        else:  # data is a small message used in the transfer protocol
-            if data == b'FileError':
+        else:  # msg is a small message used in the transfer protocol
+            if msg == b'FileError':
                 logging.info('[-]  Request could not be found')
-                sock.close()
+                self.sock.close()
                 return 1
-            elif data == b'FileReceived':
+            elif msg == b'FileReceived':
                 logging.info('[+]  Sent file was successfully received')
-                return 1
-            elif data is None:
-                sock.close()
-                return 1
-            elif data.split(b':')[0] == b'InputRequest':
-
-                answer = input(str(data.split(b':')[1], encoding='utf-8'))
-                send_file(sock, bytes(answer, encoding='utf-8'))
                 return 0
+            elif msg is None:
+                self.sock.close()
+                return 1
+            elif msg.split(b':')[0] == b'InputRequest':
+
+                answer = input(str(msg.split(b':')[1], encoding='utf-8'))
+                send_encrypted_file(self.sock, bytes(answer, encoding='utf-8'))
+                return 0
+            elif msg == b'Logout':
+                logging.info('[-]  Client session logging out')
+                self.sock.close()
+                return 1
             else:
-                logging.info(str(data, encoding='utf-8'))
-
-class User:
-    def __init__(self, name, pwd, sock):
-        """
-        The ``User`` class is instanced every time the server receives a .id file.  The instance creates an environment
-        for user interface with the server.
-
-
-        :param name: Username used for naming/registration/login
-        :type name: str
-        :param pwd: User password for logging in/registering
-        :type pwd: str
-        :param sock: socket object used for communicating with the client
-        :type sock: socket.socket
-        """
-        self.name = name
-        self.pwd = pwd
-        self.sock = sock
-
-    def check_pwd(self):
-        """
-        This method checks the .pi_users file for ``self.name``.
-
-
-        :return: Returns the corresponding password to the instance username.  If it is not found, ``1`` is returned.
-        :rtype: str or int
-        """
-        with open('.pi_users', 'ab+') as f:
-            f.seek(0)
-            for line in f:
-                line_list = line.split(b':')
-                if bytes(self.name, encoding='utf-8') == line_list[0]:
-                    raw_pwd = line_list[2].strip(b'\n')
-                    salt = line_list[1]
-                    return raw_pwd, salt
-                else:
-                    pass
-            return 1
+                logging.info(str(msg, encoding='utf-8'))
 
     def login(self):
-        """
-        This method logs in the User instance with the instance password and username.
-
-
-        :return: Returns 0 on success.  Returns 1 on failure to login.
-        :rtype: int
-        """
-        raw_pwd, salt = self.check_pwd()
+        raw_pwd, salt = get_usr_pwd(self.username)
         msg = 'Incorrect username or password.\n' \
               '[1] Exit\n' \
               '[2] Register an account under this name and password\n'
@@ -126,10 +185,7 @@ class User:
             elif answ == '2':
                 self.register()
             return 1
-
         if verify_hash(self.pwd, raw_pwd, salt=salt) is True:
-            with open('.current_user', 'w') as f:
-                f.write(self.name)
             return 0
         else:
             answ = self.input_request(msg)
@@ -139,37 +195,21 @@ class User:
                 return self.register()
             return 1
 
+    def input_request(self, msg):
+        msg = 'InputRequest:' + msg
+        send_encrypted_file(self.sock, bytes(msg, encoding='utf-8'))
+        answer = str(recv_all(self.sock), encoding='utf-8')
+        return answer
+
     def register(self):
-        """
-        This method registers the User instance with the username and password, and then logs in via ``self.login()``.
-
-
-        :return: Returns 1 on failure.  Returns 0 on success.
-        :rtype: int
-        """
         hashed_pwd, salt = hash_gen(self.pwd)
-        if self.check_pwd() == 1:
+        if get_usr_pwd(self.username) == 1:
             with open('.pi_users', 'ab') as f:
-                line = bytes(self.name, encoding='utf-8') + b':' + salt + b':' + hashed_pwd + b'\n'
+                line = bytes(self.username, encoding='utf-8') + b':' + salt + b':' + hashed_pwd + b'\n'
                 f.write(line)
             return self.login()
         else:
             return 1
-
-    def input_request(self, msg):
-        """
-        This method sends a question to the client, and awaits the response.
-
-
-        :param msg: This is the question that the client will see.
-        :type msg: str
-        :return: Returns the answer to the question.
-        :rtype: str
-        """
-        msg = 'InputRequest:' + msg
-        send_file(self.sock, bytes(msg, encoding='utf-8'))
-        answer = str(recv_all(self.sock), encoding='utf-8')
-        return answer
 
 
 class ReceivedFile:
@@ -200,37 +240,6 @@ class ReceivedFile:
         """
         self.data += data
 
-    def evaluate(self):
-        """
-        This method evaluates .cert, .id, and all other files with an extension.
-        """
-        if self.ext == 'cert':
-            pass
-        elif self.ext == 'id':
-            if os.path.exists(self.name):  # login request from client
-                user = User(self.name, str(self.data, encoding='utf-8'), self.sock)
-                login = user.login()
-                if login == 1:
-                    logging.info('[-]  Failed login attempt by %s', self.name)
-                    send_file(self.sock, b'[-]  Login attempt failed')
-                elif login == 0:
-                    logging.info('[+]  Successful login attempt by %s', self.name)
-                    send_file(self.sock, b'[+]  Login attempt successful')
-            else:  # registration request from client
-                os.makedirs(self.name)
-                user = User(self.name, str(self.data, encoding='utf-8'), self.sock)
-                reg = user.register()
-                if reg == 1:
-                    logging.info('[-]  Failed registration attempt from %s', self.name)
-                    send_file(self.sock, b'[-]  Registration attempt failed')
-                elif reg == 0:
-                    logging.info('[-]  Successful user account registration for %s', self.name)
-                    send_file(self.sock, b'[+]  Registration attempt successful')
-        else:
-            current_user = get_cwu()
-            with open(current_user + '/' + self.name+'.'+self.ext, 'wb') as f:
-                f.write(self.data)
-
 
 def hash_gen(pwd, salt=None):
     pwd = bytes(pwd, encoding='utf-8')
@@ -243,18 +252,6 @@ def hash_gen(pwd, salt=None):
 def verify_hash(pwd, hashed_pwd, salt):
     possible_pwd, salt = hash_gen(pwd, salt=salt)
     return possible_pwd == hashed_pwd
-
-
-def get_cwu():
-    """
-    This function gets the current logged-in user.
-
-
-    :return: Username from the .current_user file
-    :rtype: str
-    """
-    with open('.current_user', 'r') as f:
-        return f.read()
 
 
 def recv_all(client_sock):
@@ -338,6 +335,15 @@ def send_file(sock, b_data):
     return 0
 
 
+def send_encrypted_file(sock, b_data):
+    private_key = get_private_key()
+    public_key = get_other_public_key()
+    box = nacl.public.Box(private_key, public_key)
+    nonce = nacl.utils.random(nacl.public.Box.NONCE_SIZE)
+    encrypted = box.encrypt(b_data, nonce)
+    return send_file(sock, encrypted)
+
+
 def pre_proc(filename, is_server=0):
     """
     This function processes a filename by whether or not it exists in the current working directory.
@@ -383,49 +389,43 @@ def pre_proc(filename, is_server=0):
         # The function will now return encoded data usable for requesting the file from a server
 
 
-class ClientSocket(socket.socket):
-    """
-    This is a subclass of ``socket.socket``.  Introduced primarily for simplicity and the setting of pre-defined
-    values.
-    """
-    def __init__(self, host, port):
-        """
-        Defines connecting address and connects to it.
+def hex_keygen():
+    private_key = nacl.public.PrivateKey.generate()
+    public_key = private_key.public_key
+    private_key = private_key.encode(encoder=nacl.encoding.HexEncoder)
+    public_key = public_key.encode(encoder=nacl.encoding.HexEncoder)
+    with open('.public.key', 'wb') as f:
+        f.write(public_key)
+    with open('.private_key', 'wb') as t:
+        t.write(private_key)
 
 
-        :param host: Host IP or hostname of desired peer socket.
-        :type host: str
-        :param port: Port number of server service.
-        :type port: int
-        """
-        socket.socket.__init__(self)
-        self.host = host
-        self.port = port
-        self.connect((self.host, self.port))
+def get_usr_pwd(username):
+    with open('.pi_users', 'ab+') as f:
+        f.seek(0)
+        for line in f:
+            line_list = line.split(b':')
+            if bytes(username, encoding='utf-8') == line_list[0]:
+                raw_pwd = line_list[2].strip(b'\n')
+                salt = line_list[1]
+                return raw_pwd, salt
+            else:
+                pass
+        return 1
 
 
-class ServerSocket(socket.socket):
-    """This is a subclass of ``socket.socket``.  Creates a socket with a few pre-defined variables."""
-    def __init__(self, port):
-        """
-        Sets address as reusable.  Binds and listens on the address.
+def get_other_public_key():
+    with open('.otherpublic.key', 'rb') as f:
+        public_key = f.readall()
+    return nacl.public.PublicKey(public_key, encoder=nacl.encoding.HexEncoder)
 
 
-        :param port: Port number to listen on.
-        :type port: int
-        """
-        socket.socket.__init__(self)
-        self.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.port = port
-        self.bind((socket.gethostname(), self.port))
-        self.listen(5)
+def get_private_key():
+    with open('.private.key', 'rb') as f:
+        private_key = f.readall()
+    return nacl.public.PrivateKey(private_key, encoder=nacl.encoding.HexEncoder)
 
-    def activate(self):
-        """
-        This activates the main server event loop for accepting incoming connections.
-        """
-        while True:
-            (new_socket, (ip, port)) = self.accept()
-            logging.info('[+]  Incoming connection from: %s:%i', ip, port)
-            new_thread = threading.Thread(target=evaluate, args=(new_socket,))
-            new_thread.start()
+
+def process_key_file(key_file):
+    with open('.otherpublic.key', 'wb') as file:
+        file.write(key_file)
