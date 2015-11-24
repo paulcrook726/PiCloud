@@ -100,12 +100,16 @@ class ConnectionSession:
             return 1
         except IndexError:
             pass
-        self.ext = str(file_list[-1], encoding='utf-8')
-        self.filename = str(file_list[-2], encoding='utf-8')
+        try:
+            self.ext = str(file_list[2], encoding='utf-8')
+            self.filename = str(file_list[1], encoding='utf-8') + '.'
+        except IndexError:
+            self.ext = ''
+            self.filename = str(file_list[1], encoding='utf-8')
         logging.info('[+]  The file %s.%s was received.', self.filename, self.ext)
-        if len(file_list) > 2:
+        if len(file_list) > 1:
             send_encrypted_file(self.sock, b'FileReceived')
-            file_data = file_list[-3]
+            file_data = file_list[0]
             return self.evaluate_contents(file_data)
         else:
             logging.info('[-]  File Request')
@@ -172,8 +176,14 @@ class ConnectionSession:
                 return 0
             elif msg == b'Logout':
                 logging.info('[-]  Client session logging out')
+                send_encrypted_file(self.sock, b'Logout')
                 self.sock.close()
                 return 1
+            elif msg.split(b':')[0] == b'MKDIR':
+                user_folder = self.username
+                os.makedirs(user_folder + msg.split(b':')[1].decode(encoding='utf-8'), exist_ok=True)
+                logging.info('[+]  Successfully synced directory.')
+                send_encrypted_file(self.sock, b'FileReceived')
             else:
                 logging.info(str(msg, encoding='utf-8'))
 
@@ -221,7 +231,11 @@ def hash_gen(pwd, salt=None):
         pass
     if salt is None:
         salt = uuid.uuid4().bytes
-    hashed_pwd = hashlib.pbkdf2_hmac('sha512', pwd, salt, 100000)
+    try:
+        hashed_pwd = hashlib.pbkdf2_hmac('sha512', pwd, salt, 100000)
+    except TypeError:
+        salt = bytes(salt, encoding='utf-8')
+        hashed_pwd = hashlib.pbkdf2_hmac('sha512', pwd, salt, 100000)
     return hashed_pwd, salt
 
 
@@ -340,7 +354,10 @@ def pre_proc(filename, is_server=0):
              found in the local filesystem.
     :rtype: byte str
     """
-    file_ext = bytes(filename.split('.')[1], encoding='utf-8')
+    try:
+        file_ext = bytes(filename.split('.')[1], encoding='utf-8')
+    except IndexError:
+        file_ext = ''
     name = bytes(filename.split('.')[0], encoding='utf-8')
     delimiter = b'::::::::::'
     if os.path.isfile(filename) is True:
