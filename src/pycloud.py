@@ -11,6 +11,64 @@ import hashlib
 import uuid
 
 
+class ConnectionSession:
+    def __init__(self, sock, address, is_server=True):
+        self.sock = sock
+        self.ip = address[0]
+        self.port = address[1]
+        self.filename = ''
+        self.ext = ''
+
+    def process_file(self, file):
+        file_list = file.split(b'::::::::::')  # split data along delimiter
+        logging.info('[+]  Received data from: %s:%i', self.ip, self.port)
+        try:  # check if delimiter exists in data.  If this happens, the data will be compromised.
+            x = file_list[-4]
+            logging.info("[-]  Delimiter has been found in multiple areas, causing %i bytes to be left out.  "
+                         "This causes incomplete file writes.  Exiting now!", len(x))
+            self.sock.close()
+            return 1
+        except IndexError:
+            pass
+        self.ext = str(file_list[-1], encoding='utf-8')
+        self.filename = str(file_list[-2], encoding='utf-8')
+        logging.info('[+]  The file %s.%s was received.', self.filename, self.ext)
+        if len(file_list) > 2:
+            send_file(self.sock, b'FileReceived')
+            data = file_list[-3]
+            file = ReceivedFile(name, file_ext, sock)
+            file.take_data(data)
+            file.evaluate()
+            return 0
+        else:
+            logging.info('[-]  File Request')
+            send_file(self.sock, pre_proc((self.filename+'.'+ self.ext), is_server=1))
+            return 0
+        
+    def process(self):
+        data = recv_all(self.sock)
+        if b'::::::::::' in data:  # indicated that the data is a filename (possibly only a request for a filename)
+            file = data
+            self.process_file(file)
+        else:  # data is a small message used in the transfer protocol
+            if data == b'FileError':
+                logging.info('[-]  Request could not be found')
+                sock.close()
+                return 1
+            elif data == b'FileReceived':
+                logging.info('[+]  Sent file was successfully received')
+                return 1
+            elif data is None:
+                sock.close()
+                return 1
+            elif data.split(b':')[0] == b'InputRequest':
+
+                answer = input(str(data.split(b':')[1], encoding='utf-8'))
+                send_file(sock, bytes(answer, encoding='utf-8'))
+                return 0
+            else:
+                logging.info(str(data, encoding='utf-8'))
+
 class User:
     def __init__(self, name, pwd, sock):
         """
@@ -278,73 +336,6 @@ def send_file(sock, b_data):
         b_data = b_data[buffer_size-1:]
     logging.info('[+]  Successfully sent data')
     return 0
-
-
-def evaluate(sock):
-    """
-    This is the primary function used in server/client communication evaluation.
-
-    Data is received and processed depending on whether it contains the primary delimiter for files, or whether it
-    contains certain keywords used for server communication.
-
-
-    :param sock: The socket by which data is received.
-    :type sock: socket.socket
-
-
-    :return: Returns ``0`` on success.
-    :rtype: int
-    :return: Returns ``1`` on failure.  This is especially important when determining when
-             the server/client communication is over, or whether it will go on.  A return of ``1`` indicates that
-             no more communication will go on.  ``0`` indicates that communication will happen again, and consequently,
-             ``evaluate()`` should be called again.
-    :rtype: int
-    """
-    (ip, port) = sock.getpeername()
-    data = recv_all(sock)
-    if b'::::::::::' in data:  # indicated that the data is a filename (possibly only a request for a filename)
-        data = data.split(b'::::::::::')  # split data along delimiter
-        logging.info('[+]  Received data from: %s:%i', ip, port)
-        try:  # check if delimiter exists in data.  If this happens, the data will be compromised.
-            x = data[-4]
-            logging.info("[-]  Delimiter has been found in multiple areas, causing %i bytes to be left out.  "
-                         "This causes incomplete file writes.  Exiting now!", len(x))
-            sock.close()
-            return 1
-        except IndexError:
-            pass
-        file_ext = str(data[-1], encoding='utf-8')
-        name = str(data[-2], encoding='utf-8')
-        logging.info('[+]  The file %s.%s was received.', name, file_ext)
-        if len(data) > 2:
-            send_file(sock, b'FileReceived')
-            data = data[-3]
-            file = ReceivedFile(name, file_ext, sock)
-            file.take_data(data)
-            file.evaluate()
-            return 0
-        else:
-            logging.info('[-]  File Request')
-            send_file(sock, pre_proc((name+'.'+file_ext), is_server=1))
-            return 0
-    else:  # data is a small message used in the transfer protocol
-        if data == b'FileError':
-            logging.info('[-]  Request could not be found')
-            sock.close()
-            return 1
-        elif data == b'FileReceived':
-            logging.info('[+]  Sent file was successfully received')
-            return 1
-        elif data is None:
-            sock.close()
-            return 1
-        elif data.split(b':')[0] == b'InputRequest':
-
-            answer = input(str(data.split(b':')[1], encoding='utf-8'))
-            send_file(sock, bytes(answer, encoding='utf-8'))
-            return 0
-        else:
-            logging.info(str(data, encoding='utf-8'))
 
 
 def pre_proc(filename, is_server=0):
