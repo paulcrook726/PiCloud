@@ -70,6 +70,3 @@ def main():
                 utils.send_encrypted_file(session.sock, b'Logout')
                 interface.session.sock.close()
                 break
-
-if __name__ == '__main__':
-    main()
