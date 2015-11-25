@@ -1,11 +1,11 @@
-from pycloud import *
+from pytp import connectsession
+import logging
+
 
 def main():
     logging.basicConfig(format='%(asctime)s %(message)s', filename='picloud.log', level=logging.INFO)
-    c = ClientSocket('192.168.2.194', 46000)
-    f = pre_proc('read.pdf')
-    send_file(c, f)
-    evaluate(c)
+    server = connectsession.ServerSocket(46000)
+    server.activate()
 
 
 if __name__ == '__main__':
