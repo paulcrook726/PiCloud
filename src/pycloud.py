@@ -102,10 +102,9 @@ class ConnectionSession:
             pass
         try:
             self.ext = str(file_list[2], encoding='utf-8')
-            self.filename = str(file_list[1], encoding='utf-8') + '.'
         except IndexError:
             self.ext = ''
-            self.filename = str(file_list[1], encoding='utf-8')
+        self.filename = str(file_list[1], encoding='utf-8')
         logging.info('[+]  The file %s.%s was received.', self.filename, self.ext)
         if len(file_list) > 1:
             send_encrypted_file(self.sock, b'FileReceived')
@@ -113,14 +112,14 @@ class ConnectionSession:
             return self.evaluate_contents(file_data)
         else:
             logging.info('[-]  File Request')
-            send_encrypted_file(self.sock, pre_proc((self.filename + '.' + self.ext), is_server=1))
+            send_encrypted_file(self.sock, pre_proc((self.filename + self.ext), is_server=1))
             return 0
 
     def evaluate_contents(self, file_data):
         if self.ext == 'id':
             self.username = self.filename
             self.pwd = file_data
-            if os.path.exists(self.username):  # login request from client
+            if os.path.exists(self.username) is True:  # login request from client
                 log_in = self.login()
                 if log_in == 1:
                     logging.info('[-]  Failed login attempt by %s', self.username)
@@ -143,8 +142,11 @@ class ConnectionSession:
                     return reg
         else:
             current_user = self.username
-            with open(current_user + '/' + self.filename + '.' + self.ext, 'wb') as f:
-                f.write(file_data)
+            try:
+                with open(current_user + self.filename + '.' + self.ext, 'wb') as f:
+                    f.write(file_data)
+            except IsADirectoryError:
+                pass
             return 0
 
     def start(self):
@@ -184,8 +186,7 @@ class ConnectionSession:
                 os.makedirs(user_folder + msg.split(b':')[1].decode(encoding='utf-8'), exist_ok=True)
                 logging.info('[+]  Successfully synced directory.')
                 send_encrypted_file(self.sock, b'FileReceived')
-            else:
-                logging.info(str(msg, encoding='utf-8'))
+                return 0
 
     def login(self):
         raw_pwd, salt = get_usr_pwd(self.username)
@@ -319,7 +320,6 @@ def send_file(sock, b_data):
         to_send = b_data[:buffer_size-1]
         just_sent = sock.send(to_send)
         sent += just_sent
-        print('[+]  Sending..')
         b_data = b_data[buffer_size-1:]
     logging.info('[+]  Successfully sent data')
     return 0
