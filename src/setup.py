@@ -8,4 +8,6 @@ setup(name='PiCloud',
       author_email='paulcrook726@gmail.com',
       license='GNU',
       packages=['pytp'],
+      install_requires=[
+          'nacl'],
       zip_safe=False)
