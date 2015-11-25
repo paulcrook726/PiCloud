@@ -15,7 +15,8 @@ setup(name='PiCloud',
       license='GNU',
       entry_points={
           'console_scripts':
-              ['picli = pytp.client_cli:main']
+              ['picli = pytp.client_cli:main',
+               'piserver = pytp.server:main'],
       },
       packages=find_packages(),
       classifiers=[
