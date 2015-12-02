@@ -22,7 +22,6 @@ setup(name='pInteServ',
       classifiers=[
           'Development Status :: 3 - Alpha',
           'Programming Language :: Python :: 3.5',
-          'License :: OSI Approved :: GNU General Public Licence (GPL)',
           'Topic :: Internet :: File Transfer Protocol (FTP)',
       ],
       install_requires=[
