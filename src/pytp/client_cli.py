@@ -4,6 +4,7 @@ import sys
 import getpass
 import os
 import logging
+import socket
 
 
 class CLI:
@@ -85,7 +86,7 @@ def main():
     The main cli function.  Used for gathering terminal input at program initiation
     """
     logging.basicConfig(format='%(asctime)s %(message)s', filename='picloud.log', level=logging.INFO)
-    c = connectsession.ClientSocket('88.64.36.157', 46000)
+    c = connectsession.ClientSocket(socket.gethostname(), 46000)
     address = (c.host, c.port)
     session = connectsession.ConnectionSession(c, address, is_server=False)
     interface = CLI(session)
