@@ -5,7 +5,7 @@ def readme():
     with open('../README.rst') as f:
         return f.read()
 
-setup(name='PiCloud',
+setup(name='pInteServ',
       version='0.1',
       description='Module and cli for client/server directory sync.',
       long_description=readme(),
