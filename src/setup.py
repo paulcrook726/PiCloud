@@ -25,5 +25,5 @@ setup(name='pInteServ',
           'Topic :: Internet :: File Transfer Protocol (FTP)',
       ],
       install_requires=[
-          'pynacl']
+          'pynacl',]
       )
