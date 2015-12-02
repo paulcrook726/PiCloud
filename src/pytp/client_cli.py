@@ -8,9 +8,23 @@ import logging
 
 class CLI:
     def __init__(self, session):
+        """
+        This class acts as a cli wrapper class for the PiCloud low-level infrastructure.
+
+
+        :param session: This is the ``ConnectedSession`` class instance that the cli will use.
+        :type session: connectsession.ConnectedSession
+        """
         self.session = session
 
     def login(self, username=''):
+        """
+        This method initiats client login
+
+
+        :param username: The username for the client
+        :type username: str
+        """
         if username == '':
             username = input("Please enter a username: \n")
         pwd = getpass.getpass('Please enter a password: \n')
@@ -20,6 +34,13 @@ class CLI:
         self.session.listen()
 
     def sync(self, dir_path=''):
+        """
+        This method syncs a directory with the CLI session server.
+
+
+        :param dir_path: The directory path
+        :type dir_path: str
+        """
         if dir_path == '':
             dir_path = input('Please input the path of the directory you want to sync: \n')
         files = scan_dir(dir_path)
@@ -41,6 +62,15 @@ class CLI:
 
 
 def scan_dir(path):
+    """
+    This funtion scans a path for all directories, subdirectories, and files
+
+
+    :param path: Path name
+    :type path: str
+    :return: The files and directories located in ``path``
+    :rtype: list
+    """
     files = []
     for (dirpath, dirnames, filenames) in os.walk(path):
         for subdirname in dirnames:
@@ -51,6 +81,9 @@ def scan_dir(path):
 
 
 def main():
+    """
+    The main cli function.  Used for gathering terminal input at program initiation
+    """
     logging.basicConfig(format='%(asctime)s %(message)s', filename='picloud.log', level=logging.INFO)
     c = connectsession.ClientSocket(connectsession.socket.gethostname(), 46000)
     address = (c.host, c.port)

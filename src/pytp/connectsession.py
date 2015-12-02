@@ -61,7 +61,19 @@ class ServerSocket(socket.socket):
 
 
 class ConnectionSession:
+    """
+    Generates an instance of a connected session with a client/server.
+    """
     def __init__(self, sock, address, is_server=True):
+        """
+
+        :param sock: The socket that the session uses for communication
+        :type sock: socket.socket()
+        :param address: The address(ip, port) of the connected socket
+        :type address: tuple
+        :param is_server: This flags the session as being used on the client/server side
+        :type is_server: Boolean
+        """
         self.sock = sock
         self.ip = address[0]
         self.port = address[1]
@@ -76,6 +88,9 @@ class ConnectionSession:
             self.client()
 
     def server(self):
+        """
+        This method starts the server process.
+        """
         utils.hex_keygen()
         utils.process_key_file(utils.recv_all(self.sock))
         utils.send_file(self.sock, utils.pre_proc('.public.key', is_server=1))
@@ -83,11 +98,23 @@ class ConnectionSession:
             pass
 
     def client(self):
+        """
+        This method starts the client process
+        """
         utils.hex_keygen()
         utils.send_file(self.sock, utils.pre_proc('.public.key'))
         utils.process_key_file(utils.recv_all(self.sock))
 
     def process_file(self, file):
+        """
+        This method processes the binary data received from ``self.evaluate_contents`` which evaluated to be a file-type
+
+
+        :param file: The file data to be processed.
+        :type file: byte str
+        :return: 1 on failure, 0 on success
+        :rtype: int
+        """
         file_list = file.split(b'::::::::::')  # split data along delimiter
         logging.info('[+]  Received data from: %s:%i', self.ip, self.port)
         try:  # check if delimiter exists in data.  If this happens, the data will be compromised.
@@ -114,6 +141,15 @@ class ConnectionSession:
             return 0
 
     def evaluate_contents(self, file_data):
+        """
+        This method evaluates the contents of a file based on its file extension.
+
+
+        :param file_data: processed file data from ``self.process_file``
+        :type file_data: byte str
+        :return: 1 on failure, 0 on success
+        :rtype: int
+        """
         if self.ext == 'id':
             self.username = self.filename
             self.pwd = file_data
@@ -148,6 +184,14 @@ class ConnectionSession:
             return 0
 
     def listen(self):
+        """
+        The main session method.  This method listens on the session socket for incoming data and (1) decrypts the data
+        ,and (2) determines if the data is a file type or a simple protocol message.
+
+
+        :return: 1 on failure, 0 on success
+        :rtype: int
+        """
         encrypted_msg = utils.recv_all(self.sock)
         if encrypted_msg is None:
             return 1
@@ -187,6 +231,14 @@ class ConnectionSession:
                 return 0
 
     def login(self):
+        """
+        This method logs in the session under a specific username and password.  ``self.login`` MUST be called at least
+        once in the beginning of the session.
+
+
+        :return: 1 on failure, 0 on success
+        :rtype: int
+        """
         raw_pwd, salt = utils.get_usr_pwd(self.username)
         msg = 'Incorrect username or password.\n' \
               '[1] Exit\n' \
@@ -207,12 +259,28 @@ class ConnectionSession:
                 return self.register()
 
     def input_request(self, msg):
+        """
+        A simple method which asks the client a specific question and gets the answer.
+
+
+        :param msg: The question/query being asked
+        :type msg: str
+        :return: The answer
+        :rtype: str
+        """
         msg = 'InputRequest:' + msg
         utils.send_encrypted_file(self.sock, bytes(msg, encoding='utf-8'))
         answer = str(utils.recv_all(self.sock), encoding='utf-8')
         return answer
 
     def register(self):
+        """
+        This method registers a user into the user account control.
+
+
+        :return: 1 on failure, 0 on success
+        :rtype: int
+        """
         hashed_pwd, salt = utils.hash_gen(self.pwd)
         if utils.get_usr_pwd(self.username) == 1:
             with open('.pi_users', 'ab') as f:
