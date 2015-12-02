@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>pytp package &mdash; pInteServ Alpha documentation</title>
+  <title>pytp package &mdash; pInteServ alpha documentation</title>
   
 
   
@@ -30,8 +30,7 @@
   
 
   
-    <link rel="top" title="pInteServ Alpha documentation" href="index.html"/>
-        <link rel="next" title="setup module" href="setup.html"/>
+    <link rel="top" title="pInteServ alpha documentation" href="index.html"/>
         <link rel="prev" title="Welcome to pInteServ’s documentation!" href="index.html"/> 
 
   
@@ -80,14 +79,13 @@
                 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="">pytp package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#pytp-client-cli-module">pytp.client_cli module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#pytp-connectsession-module">pytp.connectsession module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#pytp-server-module">pytp.server module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#pytp-utils-module">pytp.utils module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-contents">Module contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pytp.client_cli">pytp.client_cli module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pytp.connectsession">pytp.connectsession module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pytp.server">pytp.server module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pytp.utils">pytp.utils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pytp">Module contents</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="setup.html">setup module</a></li>
 </ul>
 
             
@@ -137,20 +135,386 @@
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="pytp-client-cli-module">
-<h2>pytp.client_cli module<a class="headerlink" href="#pytp-client-cli-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-pytp.client_cli">
+<span id="pytp-client-cli-module"></span><h2>pytp.client_cli module<a class="headerlink" href="#module-pytp.client_cli" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pytp.client_cli.CLI">
+<em class="property">class </em><code class="descclassname">pytp.client_cli.</code><code class="descname">CLI</code><span class="sig-paren">(</span><em>session</em><span class="sig-paren">)</span><a class="headerlink" href="#pytp.client_cli.CLI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="pytp.client_cli.CLI.login">
+<code class="descname">login</code><span class="sig-paren">(</span><em>username=''</em><span class="sig-paren">)</span><a class="headerlink" href="#pytp.client_cli.CLI.login" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method initiats client login</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>username</strong> (<em>str</em>) &#8211; The username for the client</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytp.client_cli.CLI.sync">
+<code class="descname">sync</code><span class="sig-paren">(</span><em>dir_path=''</em><span class="sig-paren">)</span><a class="headerlink" href="#pytp.client_cli.CLI.sync" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method syncs a directory with the CLI session server.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dir_path</strong> (<em>str</em>) &#8211; The directory path</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="pytp.client_cli.main">
+<code class="descclassname">pytp.client_cli.</code><code class="descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pytp.client_cli.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>The main cli function.  Used for gathering terminal input at program initiation</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytp.client_cli.scan_dir">
+<code class="descclassname">pytp.client_cli.</code><code class="descname">scan_dir</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#pytp.client_cli.scan_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>This funtion scans a path for all directories, subdirectories, and files</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<em>str</em>) &#8211; Path name</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The files and directories located in <code class="docutils literal"><span class="pre">path</span></code></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </div>
-<div class="section" id="pytp-connectsession-module">
-<h2>pytp.connectsession module<a class="headerlink" href="#pytp-connectsession-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-pytp.connectsession">
+<span id="pytp-connectsession-module"></span><h2>pytp.connectsession module<a class="headerlink" href="#module-pytp.connectsession" title="Permalink to this headline">¶</a></h2>
+<p>This module is the primary building block of the PyCloud infrastructure.  Within it, the basic file transfer protocol is
+laid down.</p>
+<dl class="class">
+<dt id="pytp.connectsession.ClientSocket">
+<em class="property">class </em><code class="descclassname">pytp.connectsession.</code><code class="descname">ClientSocket</code><span class="sig-paren">(</span><em>host</em>, <em>port</em><span class="sig-paren">)</span><a class="headerlink" href="#pytp.connectsession.ClientSocket" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">socket.socket</span></code></p>
+<p>This is a subclass of <code class="docutils literal"><span class="pre">socket.socket</span></code>.  Introduced primarily for simplicity and the setting of pre-defined
+values.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pytp.connectsession.ConnectionSession">
+<em class="property">class </em><code class="descclassname">pytp.connectsession.</code><code class="descname">ConnectionSession</code><span class="sig-paren">(</span><em>sock</em>, <em>address</em>, <em>is_server=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pytp.connectsession.ConnectionSession" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Generates an instance of a connected session with a client/server.</p>
+<dl class="method">
+<dt id="pytp.connectsession.ConnectionSession.client">
+<code class="descname">client</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pytp.connectsession.ConnectionSession.client" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method starts the client process</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytp.connectsession.ConnectionSession.evaluate_contents">
+<code class="descname">evaluate_contents</code><span class="sig-paren">(</span><em>file_data</em><span class="sig-paren">)</span><a class="headerlink" href="#pytp.connectsession.ConnectionSession.evaluate_contents" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method evaluates the contents of a file based on its file extension.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file_data</strong> (<em>byte str</em>) &#8211; processed file data from <code class="docutils literal"><span class="pre">self.process_file</span></code></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">1 on failure, 0 on success</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytp.connectsession.ConnectionSession.input_request">
+<code class="descname">input_request</code><span class="sig-paren">(</span><em>msg</em><span class="sig-paren">)</span><a class="headerlink" href="#pytp.connectsession.ConnectionSession.input_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>A simple method which asks the client a specific question and gets the answer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>msg</strong> (<em>str</em>) &#8211; The question/query being asked</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The answer</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytp.connectsession.ConnectionSession.listen">
+<code class="descname">listen</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pytp.connectsession.ConnectionSession.listen" title="Permalink to this definition">¶</a></dt>
+<dd><p>The main session method.  This method listens on the session socket for incoming data and (1) decrypts the data
+,and (2) determines if the data is a file type or a simple protocol message.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">1 on failure, 0 on success</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytp.connectsession.ConnectionSession.login">
+<code class="descname">login</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pytp.connectsession.ConnectionSession.login" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method logs in the session under a specific username and password.  <code class="docutils literal"><span class="pre">self.login</span></code> MUST be called at least
+once in the beginning of the session.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">1 on failure, 0 on success</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytp.connectsession.ConnectionSession.process_file">
+<code class="descname">process_file</code><span class="sig-paren">(</span><em>file</em><span class="sig-paren">)</span><a class="headerlink" href="#pytp.connectsession.ConnectionSession.process_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method processes the binary data received from <code class="docutils literal"><span class="pre">self.evaluate_contents</span></code> which evaluated to be a file-type</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file</strong> (<em>byte str</em>) &#8211; The file data to be processed.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">1 on failure, 0 on success</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytp.connectsession.ConnectionSession.register">
+<code class="descname">register</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pytp.connectsession.ConnectionSession.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method registers a user into the user account control.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">1 on failure, 0 on success</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytp.connectsession.ConnectionSession.server">
+<code class="descname">server</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pytp.connectsession.ConnectionSession.server" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method starts the server process.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pytp.connectsession.ServerSocket">
+<em class="property">class </em><code class="descclassname">pytp.connectsession.</code><code class="descname">ServerSocket</code><span class="sig-paren">(</span><em>port</em><span class="sig-paren">)</span><a class="headerlink" href="#pytp.connectsession.ServerSocket" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">socket.socket</span></code></p>
+<p>This is a subclass of <code class="docutils literal"><span class="pre">socket.socket</span></code>.  Creates a socket with a few pre-defined variables.</p>
+<dl class="method">
+<dt id="pytp.connectsession.ServerSocket.activate">
+<code class="descname">activate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pytp.connectsession.ServerSocket.activate" title="Permalink to this definition">¶</a></dt>
+<dd><p>This activates the main server event loop for accepting incoming connections.</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
-<div class="section" id="pytp-server-module">
-<h2>pytp.server module<a class="headerlink" href="#pytp-server-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-pytp.server">
+<span id="pytp-server-module"></span><h2>pytp.server module<a class="headerlink" href="#module-pytp.server" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="pytp.server.main">
+<code class="descclassname">pytp.server.</code><code class="descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pytp.server.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>The main function for starting a server.  Usage is piserver</p>
+</dd></dl>
+
 </div>
-<div class="section" id="pytp-utils-module">
-<h2>pytp.utils module<a class="headerlink" href="#pytp-utils-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-pytp.utils">
+<span id="pytp-utils-module"></span><h2>pytp.utils module<a class="headerlink" href="#module-pytp.utils" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="pytp.utils.get_other_public_key">
+<code class="descclassname">pytp.utils.</code><code class="descname">get_other_public_key</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pytp.utils.get_other_public_key" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pytp.utils.get_private_key">
+<code class="descclassname">pytp.utils.</code><code class="descname">get_private_key</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pytp.utils.get_private_key" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pytp.utils.get_usr_pwd">
+<code class="descclassname">pytp.utils.</code><code class="descname">get_usr_pwd</code><span class="sig-paren">(</span><em>username</em><span class="sig-paren">)</span><a class="headerlink" href="#pytp.utils.get_usr_pwd" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pytp.utils.hash_gen">
+<code class="descclassname">pytp.utils.</code><code class="descname">hash_gen</code><span class="sig-paren">(</span><em>pwd</em>, <em>salt=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pytp.utils.hash_gen" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pytp.utils.hex_keygen">
+<code class="descclassname">pytp.utils.</code><code class="descname">hex_keygen</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pytp.utils.hex_keygen" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pytp.utils.pre_proc">
+<code class="descclassname">pytp.utils.</code><code class="descname">pre_proc</code><span class="sig-paren">(</span><em>filename</em>, <em>is_server=0</em><span class="sig-paren">)</span><a class="headerlink" href="#pytp.utils.pre_proc" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function processes a filename by whether or not it exists in the current working directory.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>filename</strong> (<em>str</em>) &#8211; The filename of the file you want to process.</li>
+<li><strong>is_server</strong> (<em>int</em>) &#8211; This acts as a flag for determining how exactly the function should work.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Returns the file data if it is found in the local filesystem.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">byte str</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Returns the pre-processed filename and extension if the function</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>acts as a client. (For requesting files)
+:rtype: byte str
+:return: Returns <code class="docutils literal"><span class="pre">FileError</span></code> if function is acting as a server, and the file could not be</p>
+<blockquote>
+<div>found in the local filesystem.</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">byte str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytp.utils.proc_block">
+<code class="descclassname">pytp.utils.</code><code class="descname">proc_block</code><span class="sig-paren">(</span><em>client_sock</em>, <em>length</em><span class="sig-paren">)</span><a class="headerlink" href="#pytp.utils.proc_block" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is a helper function of <code class="docutils literal"><span class="pre">recv_all()</span></code>.  It receives data according to <code class="docutils literal"><span class="pre">length</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>client_sock</strong> (<em>socket.socket</em>) &#8211; The socket by which data is received.</li>
+<li><strong>length</strong> (<em>int</em>) &#8211; The length of the data to check for and receive.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Returns <code class="docutils literal"><span class="pre">None</span></code> if no packets are received.  Otherwise returns the block of data received.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">None or byte str</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytp.utils.process_key_file">
+<code class="descclassname">pytp.utils.</code><code class="descname">process_key_file</code><span class="sig-paren">(</span><em>key_file</em><span class="sig-paren">)</span><a class="headerlink" href="#pytp.utils.process_key_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pytp.utils.recv_all">
+<code class="descclassname">pytp.utils.</code><code class="descname">recv_all</code><span class="sig-paren">(</span><em>client_sock</em><span class="sig-paren">)</span><a class="headerlink" href="#pytp.utils.recv_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function receives data on a socket by processing the data length at first.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>client_sock</strong> (<em>socket.socket</em>) &#8211; The socket by which data is being received.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Returns <code class="docutils literal"><span class="pre">None</span></code> if no data is received.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">None</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Otherwise returns the data received.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">byte str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytp.utils.send_encrypted_file">
+<code class="descclassname">pytp.utils.</code><code class="descname">send_encrypted_file</code><span class="sig-paren">(</span><em>sock</em>, <em>b_data</em><span class="sig-paren">)</span><a class="headerlink" href="#pytp.utils.send_encrypted_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pytp.utils.send_file">
+<code class="descclassname">pytp.utils.</code><code class="descname">send_file</code><span class="sig-paren">(</span><em>sock</em>, <em>b_data</em><span class="sig-paren">)</span><a class="headerlink" href="#pytp.utils.send_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function sends a byte string over a connected socket.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>sock</strong> (<em>socket.socket</em>) &#8211; The socket by which data is sent.</li>
+<li><strong>b_data</strong> (<em>byte str</em>) &#8211; The data to be sent.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Returns <code class="docutils literal"><span class="pre">0</span></code> upon success.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">int</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Returns <code class="docutils literal"><span class="pre">None</span></code> on failure.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytp.utils.verify_hash">
+<code class="descclassname">pytp.utils.</code><code class="descname">verify_hash</code><span class="sig-paren">(</span><em>pwd</em>, <em>hashed_pwd</em>, <em>salt</em><span class="sig-paren">)</span><a class="headerlink" href="#pytp.utils.verify_hash" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </div>
-<div class="section" id="module-contents">
-<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-pytp">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pytp" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 
@@ -160,8 +524,6 @@
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="setup.html" class="btn btn-neutral float-right" title="setup module" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="index.html" class="btn btn-neutral" title="Welcome to pInteServ’s documentation!" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
@@ -173,7 +535,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2015, Paul.
+        &copy; Copyright 2015, Paul Crook.
 
     </p>
   </div>
@@ -195,7 +557,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'Alpha',
+            VERSION:'alpha',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
