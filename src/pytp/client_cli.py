@@ -92,7 +92,20 @@ def main():
     os.makedirs(wd, exist_ok=True)
     os.chdir(wd)
     logging.basicConfig(format='%(asctime)s %(message)s', filename='pInteServ.log', level=logging.INFO)
-    c = connectsession.ClientSocket(socket.gethostname(), 46000)
+    port = None
+    hostname = None
+    while hostname is None:
+        hostname = input("Please input your server/host ip address, or press q to quit.\n"
+                         "Typing nothing and pressing enter will look for a server on this computer.\n")
+        if hostname == 'q':
+            return 0
+        elif hostname == '':
+            hostname = socket.gethostname()
+    while port is None:
+        port = input("Please input the port number you would like to listen on, or press q to quit.\n")
+        if port == 'q':
+            return 0
+    c = connectsession.ClientSocket(hostname, port)
     address = (c.host, c.port)
     session = connectsession.ConnectionSession(c, address, is_server=False)
     interface = CLI(session)
@@ -110,5 +123,6 @@ def main():
     print("Bye!")
     utils.send_encrypted_file(session.sock, b'Logout')
     interface.session.sock.close()
+
 if __name__ == '__main__':
     main()
