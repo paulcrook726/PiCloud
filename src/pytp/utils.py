@@ -188,6 +188,7 @@ def get_usr_pwd(username):
                 return raw_pwd, salt
             else:
                 pass
+    return 1
 
 
 def get_other_public_key():

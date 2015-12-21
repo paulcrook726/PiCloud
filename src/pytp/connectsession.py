@@ -248,6 +248,7 @@ class ConnectionSession:
         :rtype: int
         """
         hashed_pwd, salt = utils.hash_gen(self.pwd)
+        print("somethi66ng")
         if utils.get_usr_pwd(self.username) == 1:
             print("something")
             with open('.users.txt', 'ab') as f:
