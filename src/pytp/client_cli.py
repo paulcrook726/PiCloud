@@ -102,7 +102,7 @@ def main():
         elif hostname == '':
             hostname = socket.gethostname()
     while port is None:
-        port = input("Please input the port number you would like to listen on, or press q to quit.\n")
+        port = int(input("Please input the port number you would like to listen on, or press q to quit.\n"))
         if port == 'q':
             return 0
     c = connectsession.ClientSocket(hostname, port)
