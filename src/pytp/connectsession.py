@@ -107,7 +107,7 @@ class ConnectionSession:
 
     def process_file(self, file):
         """
-        This method processes the binary data received from ``self.evaluate_contents`` which evaluated to be a file-type
+        This method processes only the binary data received from ``self.listen`` which was evaluated to be a file-type.
 
 
         :param file: The file data to be processed.
@@ -164,7 +164,6 @@ class ConnectionSession:
                     utils.send_encrypted_file(self.sock, b'[+]  Login attempt successful')
                     return log_in
             else:  # registration request from client
-                os.makedirs(self.username)
                 reg = self.register()
                 if reg == 1:
                     logging.info('[-]  Failed registration attempt from %s', self.username)
@@ -222,6 +221,9 @@ class ConnectionSession:
                 logging.info('[+]  Successfully synced directory.')
                 utils.send_encrypted_file(self.sock, b'FileReceived')
                 return 0
+            else:
+                logging.info(msg)
+                return 0
 
     def login(self):
         """
@@ -233,12 +235,9 @@ class ConnectionSession:
         :rtype: int
         """
         raw_pwd, salt = utils.get_usr_pwd(self.username)
-        if raw_pwd == 1:
-            return self.register()
         if utils.verify_hash(self.pwd, raw_pwd, salt=salt) is True:
             return 0
-        else:
-            return self.register()
+        return 1
 
     def register(self):
         """
@@ -253,6 +252,7 @@ class ConnectionSession:
             with open('.pi_users', 'ab') as f:
                 line = bytes(self.username, encoding='utf-8') + b':' + salt + b':' + hashed_pwd + b'\n'
                 f.write(line)
+            os.makedirs(self.username)
             return self.login()
         else:
             return 1

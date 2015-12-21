@@ -32,6 +32,7 @@ class CLI:
             f.write(pwd)
         utils.send_encrypted_file(self.session.sock, utils.pre_proc(username + '.id'))
         self.session.listen()
+        self.session.listen()
 
     def sync(self, dir_path=''):
         """
