@@ -248,14 +248,11 @@ class ConnectionSession:
         :rtype: int
         """
         hashed_pwd, salt = utils.hash_gen(self.pwd)
-        print("somethi66ng")
         if utils.get_usr_pwd(self.username) == 1:
-            print("something")
             with open('.users.txt', 'ab') as f:
                 line = bytes(self.username, encoding='utf-8') + b':' + salt + b':' + hashed_pwd + b'\n'
-                print(line)
                 f.write(line)
             os.makedirs(self.username)
-            return self.login()
+            return 0
         else:
             return 1
