@@ -6,7 +6,7 @@ def readme():
         return f.read()
 
 setup(name='pInteServ',
-      version='0.112',
+      version='0.113',
       description='Module and cli for client/server directory sync.',
       long_description=readme(),
       url='https://github.com/paulcrook726/PiCloud.git',
