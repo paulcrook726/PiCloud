@@ -1,6 +1,5 @@
 from pytp import connectsession
 from pytp import utils
-import sys
 import getpass
 import os
 import logging
@@ -64,7 +63,7 @@ class CLI:
 
 def scan_dir(path):
     """
-    This funtion scans a path for all directories, subdirectories, and files
+    This function scans a path for all directories, subdirectories, and files
 
 
     :param path: Path name
@@ -73,11 +72,11 @@ def scan_dir(path):
     :rtype: list
     """
     files = []
-    for (dirpath, dirnames, filenames) in os.walk(path):
-        for subdirname in dirnames:
-            files.append(os.path.join(dirpath, subdirname))
-        for filename in filenames:
-            files.append(os.path.join(dirpath, filename))
+    for (dir_path, dir_names, file_names) in os.walk(path):
+        for subdir_name in dir_names:
+            files.append(os.path.join(dir_path, subdir_name))
+        for filename in file_names:
+            files.append(os.path.join(dir_path, filename))
     return files
 
 
@@ -94,23 +93,18 @@ def main():
     address = (c.host, c.port)
     session = connectsession.ConnectionSession(c, address, is_server=False)
     interface = CLI(session)
-    sync_list = [
-        'sync',
-        '-sync',
-        '-s'
-    ]
-    try:
-        name = sys.argv[1]
-        interface.login(username=name)
-    except IndexError:
-        interface.login()
     print("[Press q at any time to quit]\n")
     prompt = None
     while prompt != 'q':
         prompt = input()
-        if prompt in sync_list:
+        if prompt == 'login':
+            print("Logging in...\n")
+            interface.login()
+            print("Done!")
+        if prompt == 'sync':
             path = input("Please specify the path of the directory you would like to keep synced.\n")
-            interface.sync(path)
+            interface.sync(dir_path=path)
+    print("Bye!")
     utils.send_encrypted_file(session.sock, b'Logout')
     interface.session.sock.close()
 main()

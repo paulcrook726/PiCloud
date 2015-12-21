@@ -176,11 +176,9 @@ class ConnectionSession:
                     return reg
         else:
             current_user = self.username
-            try:
-                with open(current_user + self.filename + '.' + self.ext, 'wb') as f:
-                    f.write(file_data)
-            except IsADirectoryError:
-                pass
+            os.makedirs(os.path.dirname(current_user + self.filename + '.' + self.ext), exist_ok=True)
+            with open(current_user + self.filename + '.' + self.ext, 'wb') as f:
+                f.write(file_data)
             return 0
 
     def listen(self):
@@ -213,11 +211,6 @@ class ConnectionSession:
             elif msg is None:
                 self.sock.close()
                 return 1
-            elif msg.split(b':')[0] == b'InputRequest':
-
-                answer = input(str(msg.split(b':')[1], encoding='utf-8'))
-                utils.send_encrypted_file(self.sock, bytes(answer, encoding='utf-8'))
-                return 0
             elif msg == b'Logout':
                 logging.info('[-]  Client session logging out')
                 utils.send_encrypted_file(self.sock, b'Logout')
@@ -225,7 +218,7 @@ class ConnectionSession:
                 return 1
             elif msg.split(b':')[0] == b'MKDIR':
                 user_folder = self.username
-                os.makedirs(user_folder + msg.split(b':')[1].decode(encoding='utf-8'), exist_ok=True)
+                os.makedirs(os.path.join(user_folder, msg.split(b':')[1].decode(encoding='utf-8')), exist_ok=True)
                 logging.info('[+]  Successfully synced directory.')
                 utils.send_encrypted_file(self.sock, b'FileReceived')
                 return 0
@@ -240,38 +233,12 @@ class ConnectionSession:
         :rtype: int
         """
         raw_pwd, salt = utils.get_usr_pwd(self.username)
-        msg = 'Incorrect username or password.\n' \
-              '[1] Exit\n' \
-              '[2] Register an account under this name and password\n'
         if raw_pwd == 1:
-            answ = self.input_request(msg)
-            if answ == '1':
-                return 1
-            elif answ == '2':
-                return self.register()
+            return self.register()
         if utils.verify_hash(self.pwd, raw_pwd, salt=salt) is True:
             return 0
         else:
-            answ = self.input_request(msg)
-            if answ == '1':
-                return 1
-            elif answ == '2':
-                return self.register()
-
-    def input_request(self, msg):
-        """
-        A simple method which asks the client a specific question and gets the answer.
-
-
-        :param msg: The question/query being asked
-        :type msg: str
-        :return: The answer
-        :rtype: str
-        """
-        msg = 'InputRequest:' + msg
-        utils.send_encrypted_file(self.sock, bytes(msg, encoding='utf-8'))
-        answer = str(utils.recv_all(self.sock), encoding='utf-8')
-        return answer
+            return self.register()
 
     def register(self):
         """
