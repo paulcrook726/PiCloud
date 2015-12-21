@@ -13,7 +13,7 @@ def main():
     logging.basicConfig(format='%(asctime)s %(message)s', filename='pInteServ.log', level=logging.INFO)
     port = None
     while port is None:
-        port = input("Please input the port number you would like to listen on, or press q to quit.\n")
+        port = int(input("Please input the port number you would like to listen on, or press q to quit.\n"))
         if port == 'q':
             return 0
     server = connectsession.ServerSocket(port)
