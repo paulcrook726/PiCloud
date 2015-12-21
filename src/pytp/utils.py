@@ -185,7 +185,7 @@ def pre_proc(filename, is_server=0):
     try:
         file_ext = bytes(filename.split('.')[1], encoding='utf-8')
     except IndexError:
-        file_ext = ''
+        file_ext = b''
     name = bytes(filename.split('.')[0], encoding='utf-8')
     delimiter = b'::::::::::'
     if os.path.isfile(filename) is True:
