@@ -14,3 +14,5 @@ def main():
     server = connectsession.ServerSocket(46000)
     server.activate()
 
+if __name__ == '__main__':
+    main()

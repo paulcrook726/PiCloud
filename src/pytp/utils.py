@@ -178,7 +178,7 @@ def hex_keygen():
 
 
 def get_usr_pwd(username):
-    with open('.pi_users', 'ab+') as f:
+    with open('.users.txt', 'ab+') as f:
         f.seek(0)
         for line in f:
             line_list = line.split(b':')
