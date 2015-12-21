@@ -222,7 +222,7 @@ class ConnectionSession:
                 utils.send_encrypted_file(self.sock, b'FileReceived')
                 return 0
             else:
-                logging.info(msg)
+                logging.info(str(msg, encoding='utf-8'))
                 return 0
 
     def login(self):
@@ -249,8 +249,10 @@ class ConnectionSession:
         """
         hashed_pwd, salt = utils.hash_gen(self.pwd)
         if utils.get_usr_pwd(self.username) == 1:
-            with open('.pi_users', 'ab') as f:
+            print("something")
+            with open('.users.txt', 'ab') as f:
                 line = bytes(self.username, encoding='utf-8') + b':' + salt + b':' + hashed_pwd + b'\n'
+                print(line)
                 f.write(line)
             os.makedirs(self.username)
             return self.login()
