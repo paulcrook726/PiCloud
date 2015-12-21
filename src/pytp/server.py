@@ -13,5 +13,4 @@ def main():
     logging.basicConfig(format='%(asctime)s %(message)s', filename='pInteServ.log', level=logging.INFO)
     server = connectsession.ServerSocket(46000)
     server.activate()
-main()
 

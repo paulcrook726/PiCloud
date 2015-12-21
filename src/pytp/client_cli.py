@@ -107,4 +107,3 @@ def main():
     print("Bye!")
     utils.send_encrypted_file(session.sock, b'Logout')
     interface.session.sock.close()
-main()
