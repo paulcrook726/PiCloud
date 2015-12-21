@@ -112,6 +112,8 @@ class ConnectionSession:
 
         :param file: The file data to be processed.
         :type file: byte str
+
+
         :return: 1 on failure, 0 on success
         :rtype: int
         """
@@ -147,6 +149,8 @@ class ConnectionSession:
 
         :param file_data: processed file data from ``self.process_file``
         :type file_data: byte str
+
+
         :return: 1 on failure, 0 on success
         :rtype: int
         """
@@ -183,7 +187,9 @@ class ConnectionSession:
     def listen(self):
         """
         The main session method.  This method listens on the session socket for incoming data and (1) decrypts the data
-        ,and (2) determines if the data is a file type or a simple protocol message.
+        and (2) determines if the data is a file type or a simple protocol message.
+
+
 
 
         :return: 1 on failure, 0 on success

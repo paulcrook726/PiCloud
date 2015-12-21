@@ -69,6 +69,8 @@ def scan_dir(path):
 
     :param path: Path name
     :type path: str
+
+
     :return: The files and directories located in ``path``
     :rtype: list
     """

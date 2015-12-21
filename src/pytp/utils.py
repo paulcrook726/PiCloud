@@ -10,6 +10,20 @@ import nacl.utils
 
 
 def hash_gen(pwd, salt=None):
+    """
+    This function generates a hashed password from a given pwd.  If specified, a particule salt will be used; otherwise,
+    the salt is randomly generated.
+
+
+    :param pwd: The password to be hashed
+    :type pwd: str or bytes
+    :param salt: The salt to be used for hash gen.
+    :type salt: bytes
+
+
+    :return: Returns the hashed password and salt
+    :rtype: bytes
+    """
     try:
         pwd = bytes(pwd, encoding='utf-8')
     except TypeError:
@@ -25,6 +39,21 @@ def hash_gen(pwd, salt=None):
 
 
 def verify_hash(pwd, hashed_pwd, salt):
+    """
+    This simply verifies a password with a particular salt with an already hashed password.  Used for user login.
+
+
+    :param pwd: Unhashed password
+    :type pwd: str
+    :param hashed_pwd: The stored, already hashed password.
+    :type hashed_pwd: bytes
+    :param salt: The salt used for the hashed password
+    :type salt: bytes
+
+
+    :return: True or False, depending on the verification
+    :rtype: Boolean
+    """
     possible_pwd, salt = hash_gen(pwd, salt=salt)
     return possible_pwd == hashed_pwd
 
@@ -110,6 +139,17 @@ def send_file(sock, b_data):
 
 
 def send_encrypted_file(sock, b_data):
+    """
+    This function encryptes data to be sent.
+    :param sock: The socket used to send data
+    :type sock: socket.socket
+    :param b_data: The data to be sent
+    :type b_data: bytes
+
+
+    :return: The return value of ``send_file``, 0 on success
+    :rtype: int
+    """
     private_key = get_private_key()
     public_key = get_other_public_key()
     box = nacl.public.Box(private_key, public_key)
@@ -133,9 +173,13 @@ def pre_proc(filename, is_server=0):
     :rtype: byte str
     :return: Returns the pre-processed filename and extension if the function
     acts as a client. (For requesting files)
+
+
     :rtype: byte str
     :return: Returns ``FileError`` if function is acting as a server, and the file could not be
              found in the local filesystem.
+
+
     :rtype: byte str
     """
     try:
@@ -167,6 +211,9 @@ def pre_proc(filename, is_server=0):
 
 
 def hex_keygen():
+    """
+    This generates a paired public/private key pair.  Used for the secure handshake.
+    """
     private_key = nacl.public.PrivateKey.generate()
     public_key = private_key.public_key
     private_key = private_key.encode(encoder=nacl.encoding.HexEncoder)
@@ -178,6 +225,17 @@ def hex_keygen():
 
 
 def get_usr_pwd(username):
+    """
+    This checks the main user password file and gets a particular user's password.
+
+
+    :param username: The username who's password is to be retrieved.
+    :type username: str
+
+
+    :return: Returns the byte password and salt
+    :rtype: bytes
+    """
     with open('.users.txt', 'ab+') as f:
         f.seek(0)
         for line in f:
@@ -192,6 +250,12 @@ def get_usr_pwd(username):
 
 
 def get_other_public_key():
+    """
+    This simply gets the public key of the connected socket.
+
+    :return: Returns the public key
+    :rtype: bytes(hex)
+    """
     with open('.otherpublic.key', 'r+b') as f:
         public_key = f.readline()
     public_key = public_key.split(b'::::::::::')[0]
@@ -199,11 +263,25 @@ def get_other_public_key():
 
 
 def get_private_key():
+    """
+    This gets the private key of the client/server by reading the secret file.
+
+
+    :return: Returns the private key
+    :rtype: bytes(hex)
+    """
     with open('.private.key', 'r+b') as f:
         private_key = f.readline()
     return nacl.public.PrivateKey(private_key, encoder=nacl.encoding.HexEncoder)
 
 
 def process_key_file(key_file):
+    """
+    This creates the connected socket's public key file.
+
+
+    :param key_file: The key data
+    :type key_file: bytes(hex)
+    """
     with open('.otherpublic.key', 'w+b') as file:
         file.write(key_file)
