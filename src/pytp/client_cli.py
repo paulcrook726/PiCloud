@@ -83,24 +83,48 @@ def scan_dir(path):
 
 def main():
     """
-    The main cli function.  Used for gathering terminal input at program initiation
+    The main cli function.  Used for gathering terminal input at program initiation.  Start via picli.
     """
-    logging.basicConfig(format='%(asctime)s %(message)s', filename='picloud.log', level=logging.INFO)
+    wd = os.path.join(os.path.expanduser('~'), 'pInteServ')
+    os.makedirs(wd)
+    os.chdir(wd)
+    logging.basicConfig(format='%(asctime)s %(message)s', filename='pInteServ.log', level=logging.INFO)
     c = connectsession.ClientSocket(socket.gethostname(), 46000)
     address = (c.host, c.port)
     session = connectsession.ConnectionSession(c, address, is_server=False)
     interface = CLI(session)
-    if sys.argv[1] == 'login':
-        q = ['q', 'Q', 'quit', 'Quit', 'exit', 'Exit']
-        try:
-            name = sys.argv[2]
-            interface.login(username=name)
-        except IndexError:
-            interface.login()
-        print("[Press q at any time to quit]\n")
-        while True:
-            prompt = input()
-            if prompt in q:
-                utils.send_encrypted_file(session.sock, b'Logout')
-                interface.session.sock.close()
-                break
+    q = [
+        'q',
+        'Q',
+        'quit',
+        'Quit',
+        'exit',
+        'Exit'
+    ]
+    sync_list = [
+        'sync',
+        '-sync',
+        '-s'
+    ]
+
+    try:
+        name = sys.argv[1]
+        interface.login(username=name)
+    except IndexError:
+        interface.login()
+    print("[Press q at any time to quit]\n")
+    while True:
+        prompt = input()
+        if prompt in q:
+            utils.send_encrypted_file(session.sock, b'Logout')
+            interface.session.sock.close()
+            break
+        if prompt in sync_list:
+            path = input("Please specify the path of the directory you would like to keep synced.\n")
+            while True:
+                interface.sync(path)
+                p = input()
+                if p in q:
+                    utils.send_encrypted_file(session.sock, b'Logout')
+                    interface.session.sock.close()
+                    break
